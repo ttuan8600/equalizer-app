@@ -9,6 +9,7 @@ A simple web application for uploading, equalizing, and downloading audio files 
 - Download the equalized version of the audio file.
 
 ## **Project Structure**
+```graphql
 sound_equalizer/
 │
 ├── app.py                  # Flask backend
@@ -21,7 +22,7 @@ sound_equalizer/
 │   │   └── script.js       # JavaScript for handling frontend interactions
 ├── uploads/                # Directory to store uploaded audio files
 └── requirements.txt        # Python dependencies
-
+```
 
 ## **Prerequisites**
 - Python 3.x
