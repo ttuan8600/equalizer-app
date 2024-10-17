@@ -41,28 +41,28 @@ sound_equalizer/
    python app.py
 ```
 3. **Access the app in your web browser:**
-    Visit http://127.0.0.1:5000/ to use the sound equalizer app.
+Visit http://127.0.0.1:5000/ to use the sound equalizer app.
 
-**Usage**
+## **Usage**
 - Upload Audio: Select an audio file from your device using the file input or drag and drop the file.
 - Adjust Equalizer: Use the sliders to modify the bass, mid, and treble frequencies.
 - Preview: Listen to the uploaded or modified audio using the built-in audio player.
 - Download: Click the download button to save the equalized audio file to your device.
   
-**Technologies Used**
+## **Technologies Used**
 - Flask: Backend framework for handling file uploads and serving audio files.
 - HTML, CSS, JavaScript: Frontend technologies for creating the user interface.
 - Web Audio API: For potential real-time audio processing (to be implemented).
 - pydub: For handling audio files on the backend.
   
-**Directory Details**
+## **Directory Details**
 - app.py: The Flask app that manages file uploads and serves the processed audio files.
 - templates/index.html: The main HTML file with the structure of the webpage.
 - static/css/styles.css: Styles for making the UI look clean and responsive.
 - static/js/script.js: JavaScript for handling file uploads and adjusting equalizer settings.
 - uploads/: Directory to store uploaded audio files temporarily.
 
-**Future Improvements**
+## **Future Improvements**
 - Implement real-time audio processing using the Web Audio API.
 - Add more advanced equalizer presets.
 - Enable backend audio processing for different equalizer settings.
