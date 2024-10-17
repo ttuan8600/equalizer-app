@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sound Equalizer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Sound Equalizer</h1>
+    </header>
+    <main>
+        <section id="upload">
+            <h2>Upload Audio</h2>
+            <input type="file" id="audioFile" accept="audio/*">
+            <button onclick="uploadAudio()">Upload</button>
+        </section>
+
+        <section id="equalizer">
+            <h2>Equalizer</h2>
+            <div id="controls">
+                <label>Bass: <input type="range" id="bass" min="-10" max="10" value="0"></label>
+                <label>Mid: <input type="range" id="mid" min="-10" max="10" value="0"></label>
+                <label>Treble: <input type="range" id="treble" min="-10" max="10" value="0"></label>
+            </div>
+            <button onclick="applyEqualizer()">Apply Equalizer</button>
+            <audio id="audioPlayer" controls></audio>
+        </section>
+
+        <section id="download">
+            <button id="downloadButton" style="display:none;">Download Equalized Audio</button>
+        </section>
+    </main>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
