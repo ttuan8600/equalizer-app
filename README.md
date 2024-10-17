@@ -31,13 +31,13 @@ sound_equalizer/
 ## **Setup Instructions**
 
 1. **Clone the repository:**
-   ```bash
+   ```cmd
    git clone https://github.com/your-username/sound_equalizer.git
    cd sound_equalizer
 
 2. **Run the Flask application:**
 
-```bash
+```cmd
    python app.py
 ```
 3. **Access the app in your web browser:**
