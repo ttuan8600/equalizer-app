@@ -42,7 +42,7 @@ sound_equalizer/
 ```
 3. **Access the app in your web browser:**
    
-Visit http://127.0.0.1:5000/ to use the sound equalizer app.
+   Visit http://127.0.0.1:5000/ to use the sound equalizer app.
 
 ## **Usage**
 - **Upload Audio**: Select an audio file from your device using the file input or drag and drop the file.
@@ -57,7 +57,7 @@ Visit http://127.0.0.1:5000/ to use the sound equalizer app.
 - **pydub**: For handling audio files on the backend.
   
 ## **Directory Details**
--** app.py**: The Flask app that manages file uploads and serves the processed audio files.
+- **app.py**: The Flask app that manages file uploads and serves the processed audio files.
 - **templates/index.html**: The main HTML file with the structure of the webpage.
 - **static/css/styles.css**: Styles for making the UI look clean and responsive.
 - **static/js/script.js**: JavaScript for handling file uploads and adjusting equalizer settings.
