@@ -25,10 +25,3 @@ function applyEqualizer() {
     alert(`Equalizer applied with bass: ${bass}, mid: ${mid}, treble: ${treble}`);
     // Add logic for real-time audio processing using the Web Audio API or backend processing.
 }
-
-document.querySelectorAll('.slider').forEach(slider => {
-    slider.addEventListener('input', function () {
-        // Placeholder logic for displaying slider values
-        console.log(`${this.id}: ${this.value}`);
-    });
-});

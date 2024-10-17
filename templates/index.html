@@ -7,28 +7,31 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
-    <div class="container">
+    <header>
         <h1>Sound Equalizer</h1>
-        <form method="POST" enctype="multipart/form-data">
-            <input type="file" name="file" accept=".mp3,.wav" required>
-            <div class="equalizer">
-                <label>Preamp</label>
-                <input type="range" min="-12" max="12" value="0" class="slider" id="preamp">
-                <label>32 Hz</label>
-                <input type="range" min="-12" max="12" value="0" class="slider" id="freq32">
-                <label>64 Hz</label>
-                <input type="range" min="-12" max="12" value="0" class="slider" id="freq64">
-                <label>125 Hz</label>
-                <input type="range" min="-12" max="12" value="0" class="slider" id="freq125">
-                <!-- Add more sliders for other frequencies -->
+    </header>
+    <main>
+        <section id="upload">
+            <h2>Upload Audio</h2>
+            <input type="file" id="audioFile" accept="audio/*">
+            <button onclick="uploadAudio()">Upload</button>
+        </section>
+
+        <section id="equalizer">
+            <h2>Equalizer</h2>
+            <div id="controls">
+                <label>Bass: <input type="range" id="bass" min="-10" max="10" value="0"></label>
+                <label>Mid: <input type="range" id="mid" min="-10" max="10" value="0"></label>
+                <label>Treble: <input type="range" id="treble" min="-10" max="10" value="0"></label>
             </div>
-            <button type="submit">Process</button>
-        </form>
-        <audio controls>
-            <source id="audio-preview" type="audio/mp3">
-            Your browser does not support the audio element.
-        </audio>
-    </div>
+            <button onclick="applyEqualizer()">Apply Equalizer</button>
+            <audio id="audioPlayer" controls></audio>
+        </section>
+
+        <section id="download">
+            <button id="downloadButton" style="display:none;">Download Equalized Audio</button>
+        </section>
+    </main>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>
