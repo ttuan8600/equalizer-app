@@ -1,2 +1,2 @@
-Flask
-pydub
+Flask==2.3.2
+pydub==0.25.1
