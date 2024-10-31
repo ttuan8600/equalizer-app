@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Result</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1>Audio Processing Result</h1>
+    <h2>Waveform</h2>
+    <img src="{{ url_for('static', filename=filename) }}" alt="Processed Audio">
+
+    <h2>Spectrogram</h2>
+    <img src="{{ url_for('static', filename=spectrogram) }}" alt="Spectrogram">
+    
+    <h2>Filter Frequency Response</h2>
+    <img src="{{ url_for('static', filename=filter_response) }}" alt="Filter Frequency Response">
+
+    <h2>Frequency Domain Comparison</h2>
+    <img src="{{ url_for('static', filename=frequency_comparison) }}" alt="Frequency Domain Comparison">
+
+    <a href="/">Process Another File</a>
+
+</body>
+</html>

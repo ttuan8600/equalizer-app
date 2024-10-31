@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Audio Processing with Equalizer</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <form method="post" action="{{ url_for('upload') }}" enctype="multipart/form-data">
+        <h2>Upload Audio File</h2>
+        <input type="file" name="file" accept=".wav" required><br><br>
+    
+        <h2>Equalizer Settings</h2>
+        
+        <label for="sub_bass_gain">Sub-bass (20–60 Hz)</label>
+        <input type="range" id="sub_bass_gain" name="sub_bass_gain" min="-10" max="10" value="0"><br>
+        
+        <label for="bass_gain">Bass (60–250 Hz)</label>
+        <input type="range" id="bass_gain" name="bass_gain" min="-10" max="10" value="0"><br>
+        
+        <label for="low_mid_gain">Low-mid (250–500 Hz)</label>
+        <input type="range" id="low_mid_gain" name="low_mid_gain" min="-10" max="10" value="0"><br>
+        
+        <label for="mid_gain">Mid (500–2000 Hz)</label>
+        <input type="range" id="mid_gain" name="mid_gain" min="-10" max="10" value="0"><br>
+        
+        <label for="upper_mid_gain">Upper-mid (2000–4000 Hz)</label>
+        <input type="range" id="upper_mid_gain" name="upper_mid_gain" min="-10" max="10" value="0"><br>
+        
+        <label for="presence_gain">Presence (4000–6000 Hz)</label>
+        <input type="range" id="presence_gain" name="presence_gain" min="-10" max="10" value="0"><br>
+        
+        <label for="brilliance_gain">Brilliance (6000–20000 Hz)</label>
+        <input type="range" id="brilliance_gain" name="brilliance_gain" min="-10" max="10" value="0"><br>
+    
+        <button type="submit">Process</button>
+    </form>
+    
+</body>
+</html>
