@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, redirect, url_for
+from flask import Flask, request, render_template, redirect, url_for, send_file
 import os
 import numpy as np
 import scipy.signal as signal
@@ -81,6 +81,10 @@ def process_audio(filename):
                            spectrogram="spectrogram.png",
                            filter_response="filter_response.png",
                            frequency_comparison="frequency_comparison.png")
+
+@app.route('/audio')
+def audio():
+    return send_file('uploads/StarWars60.wav', mimetype='audio/wav')
 
 def apply_equalizer(data, rate, gains):
     if all(gain == 0 for gain in gains):

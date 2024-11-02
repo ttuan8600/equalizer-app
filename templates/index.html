@@ -6,6 +6,106 @@
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
+     <audio id="audio" controls>
+        <source src="/audio" type="audio/wav">
+        Your browser does not support the audio element.
+    </audio>
+    <canvas id="visualizer"></canvas>
+
+    <script>
+        const audio = document.getElementById('audio');
+        const canvas = document.getElementById('visualizer');
+        const canvasCtx = canvas.getContext('2d');
+
+        // Set up audio context and analyser
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 256; // Larger FFT size for better frequency resolution
+        const bufferLength = analyser.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+
+        // 30 bands setting
+        const bandCount = 30;
+        const bandWidth = Math.floor(bufferLength / bandCount);
+
+        // Connect audio to analyser
+        const source = audioCtx.createMediaElementSource(audio);
+        source.connect(analyser);
+        analyser.connect(audioCtx.destination);
+
+        // Grid and box settings
+        const gridSpacingX = canvas.width / bandCount; // Adjust grid spacing for 30 bands
+        const gridSpacingY = 10; // Vertical spacing of grid boxes (box height)
+
+        // Function to draw the background grid
+        function drawGrid() {
+            const gridHeight = canvas.height;
+            const gridWidth = canvas.width;
+
+            canvasCtx.fillStyle = '#333';
+            for (let x = 0; x < gridWidth; x += gridSpacingX) {
+                for (let y = 0; y < gridHeight; y += gridSpacingY) {
+                    canvasCtx.fillRect(x, y, gridSpacingX - 1, gridSpacingY - 1);
+                }
+            }
+        }
+
+        // Function to draw the frequency bars as stacked boxes
+        function drawBars() {
+            analyser.getByteFrequencyData(dataArray);
+
+            let x = 0;
+
+            for (let i = 0; i < bandCount; i++) {
+                // Calculate the average amplitude for each band
+                let sum = 0;
+                for (let j = 0; j < bandWidth; j++) {
+                    sum += dataArray[i * bandWidth + j];
+                }
+                const average = sum / bandWidth;
+
+                // Determine the number of boxes to fill based on the average amplitude
+                const boxCount = Math.floor((average / 255) * (canvas.height / gridSpacingY));
+
+                // Draw each box in the column
+                for (let j = 0; j < boxCount; j++) {
+                    const y = canvas.height - (j + 1) * gridSpacingY;
+
+                    // Color gradient from green to yellow to red
+                    const r = Math.min(255, (j / boxCount) * 255);
+                    const g = Math.max(0, 255 - (j / boxCount) * 255);
+                    const b = 50;
+
+                    canvasCtx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+                    canvasCtx.fillRect(x, y, gridSpacingX - 1, gridSpacingY - 1);
+                }
+
+                x += gridSpacingX; // Move to the next column
+            }
+        }
+
+        // Main drawing function that combines grid and stacked boxes
+        function draw() {
+            requestAnimationFrame(draw);
+
+            // Clear the canvas
+            canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw grid background
+            drawGrid();
+
+            // Draw frequency bars as stacked boxes
+            drawBars();
+        }
+
+        // Start drawing on play
+        audio.onplay = () => {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            draw();
+        };
+    </script>
     <form method="post" action="{{ url_for('upload') }}" enctype="multipart/form-data">
         <h2>Upload Audio File</h2>
         <input type="file" name="file" accept=".wav" required><br><br>
