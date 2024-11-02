@@ -2,6 +2,8 @@ from flask import Flask, request, render_template, redirect, url_for
 import os
 import numpy as np
 import scipy.signal as signal
+import matplotlib
+matplotlib.use('Agg')  # Chỉ định sử dụng back-end không cần GUI
 import matplotlib.pyplot as plt
 from scipy.io import wavfile
 import librosa
@@ -47,16 +49,21 @@ def process_audio(filename):
     file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     rate, data = wavfile.read(file_path)
 
-    # Xử lý equalizer
-    filtered_data = apply_equalizer(data, rate, gains)
-
-    # Lưu kết quả đã xử lý
-    output_path = os.path.join(app.config['UPLOAD_FOLDER'], "filtered_" + filename)
-    wavfile.write(output_path, rate, filtered_data.astype(np.int16))
+    # Kiểm tra nếu tất cả giá trị gain đều là 0
+    if all(gain == 0 for gain in gains):
+        # Nếu tất cả gain bằng 0, giữ nguyên dữ liệu ban đầu
+        filtered_data = data
+        output_path = file_path  # Không cần tạo file mới
+    else:
+        # Nếu có gain khác 0, tiến hành xử lý equalizer
+        filtered_data = apply_equalizer(data, rate, gains)
+        output_path = os.path.join(app.config['UPLOAD_FOLDER'], "filtered_" + filename)
+        wavfile.write(output_path, rate, filtered_data.astype(np.int16))
 
     # Render biểu đồ phổ và waveform
     plt.figure(figsize=(10, 4))
-    plt.plot(data, label="Equalized")
+    plt.plot(data, label="Original Signal", color="blue", alpha=0.7)
+    plt.plot(filtered_data, label="Equalized Signal", color="red", alpha=0.7)
     plt.legend()
     plt.savefig("static/output.png")
 
@@ -93,6 +100,8 @@ def apply_equalizer(data, rate, gains):
         'brilliance': gains[6],
     }
 
+    print(gains_dict)
+
     # Thiết lập các tần số cắt cho từng băng tần
     bands = {
         'sub_bass': [20, 60],
@@ -112,7 +121,10 @@ def apply_equalizer(data, rate, gains):
         low, high = bands[band]
         sos = signal.butter(4, [low, high], btype='bandpass', fs=rate, output='sos')
         filtered_band = signal.sosfilt(sos, data)
-        filtered_data += gain * filtered_band  # Điều chỉnh theo gain của băng tần
+
+        # Chuyển đổi gain từ dB sang tỷ lệ tuyến tính
+        linear_gain = 10 ** (gain / 20)
+        filtered_data += linear_gain * filtered_band  # Điều chỉnh theo gain của băng tần
 
     # Chuẩn hóa dữ liệu sau khi cộng các băng tần
     filtered_data = np.clip(filtered_data, -32767, 32767)
