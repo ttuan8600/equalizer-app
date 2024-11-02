@@ -49,16 +49,10 @@ def process_audio(filename):
     file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     rate, data = wavfile.read(file_path)
 
-    # Kiểm tra nếu tất cả giá trị gain đều là 0
-    if all(gain == 0 for gain in gains):
-        # Nếu tất cả gain bằng 0, giữ nguyên dữ liệu ban đầu
-        filtered_data = data
-        output_path = file_path  # Không cần tạo file mới
-    else:
-        # Nếu có gain khác 0, tiến hành xử lý equalizer
-        filtered_data = apply_equalizer(data, rate, gains)
-        output_path = os.path.join(app.config['UPLOAD_FOLDER'], "filtered_" + filename)
-        wavfile.write(output_path, rate, filtered_data.astype(np.int16))
+    # Nếu có gain khác 0, tiến hành xử lý equalizer
+    filtered_data = apply_equalizer(data, rate, gains)
+    output_path = os.path.join(app.config['UPLOAD_FOLDER'], "filtered_" + filename)
+    wavfile.write(output_path, rate, filtered_data.astype(np.int16))
 
     # Render biểu đồ phổ và waveform
     plt.figure(figsize=(10, 4))
@@ -89,6 +83,9 @@ def process_audio(filename):
                            frequency_comparison="frequency_comparison.png")
 
 def apply_equalizer(data, rate, gains):
+    if all(gain == 0 for gain in gains):
+        return data
+    
     # Các băng tần và độ lợi tương ứng từ form (sub_bass, bass, low_mid, mid, upper_mid, presence, brilliance)
     gains_dict = {
         'sub_bass': gains[0],
