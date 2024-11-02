@@ -83,6 +83,9 @@ def process_audio(filename):
                            frequency_comparison="frequency_comparison.png")
 
 def apply_equalizer(data, rate, gains):
+     # Kiểm tra nếu dữ liệu đầu vào là rỗng
+    if data.size == 0:
+        return np.array([], dtype=np.int16)  # Trả về mảng rỗng có kiểu int16
     if all(gain == 0 for gain in gains):
         return data
     
