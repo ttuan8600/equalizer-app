@@ -53,6 +53,7 @@ body {
 
 #process-button {
     background-color: #ECDFCC;
+    width: 50%;
 }
 
 #loading-overlay {
@@ -74,14 +75,6 @@ body {
 
 form {
     /* max-width: 700px; */
-}
-
-.slider-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 10px;
-    width: 250px !important;
 }
 
 .vertical-range {
