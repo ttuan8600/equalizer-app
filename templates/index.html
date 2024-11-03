@@ -3,38 +3,163 @@
 <head>
     <meta charset="UTF-8">
     <title>Audio Processing with Equalizer</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <form method="post" action="{{ url_for('upload') }}" enctype="multipart/form-data">
-        <h2>Upload Audio File</h2>
-        <input type="file" name="file" accept=".wav" required><br><br>
+    <!-- Loading overlay -->
+    <div id="loading-overlay" class="d-none align-items-center justify-content-center flex-column">
+        <div class="spinner-border text-light" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+        <div id="progress-percentage" class="text-light h4 mt-3">Progressing...</div>
+    </div>
+
+    <div class="d-flex justify-content-center align-items-center">
+        <form id="equalizer-form" method="post" action="{{ url_for('upload') }}" enctype="multipart/form-data" class="p-4 rounded shadow w-100">
+            <h2 class="text-center text-light mb-4">Upload Audio File</h2>
+            <div class="form-group">
+                <input type="file" name="file" accept=".wav, .mp3" required class="form-control-file" id="file-input" onchange="checkFileUploaded()">
+            </div>
+            
+            <!-- Container for audio waveform display -->
+            <div class="container mt-4">
+                <h3 class="text-center text-light">Audio Waveform</h3>
+                <div class="border border-warning rounded p-3">
+                    <canvas id="audio-waveform" class="w-100"></canvas>
+                </div>
+            </div>
+
+            <h2 class="text-center text-light mt-4 mb-3">Equalizer Settings</h2>
+            
+            <div class="d-flex justify-content-around" style="padding: 0 25px;">
+                
+                {% for label, id in [("Sub-bass", "sub_bass_gain"), ("Bass", "bass_gain"), ("Low-mid", "low_mid_gain"), ("Mid", "mid_gain"), ("Upper-mid", "upper_mid_gain"), ("Presence", "presence_gain"), ("Brilliance", "brilliance_gain")] %}
+                <div class="text-center text-light slider-container">
+                    <label for="{{ id }}">{{ label }}<br>({{ ranges[id] }})</label>
+                    <input type="range" id="{{ id }}" name="{{ id }}" min="-10" max="10" value="0" class="custom-range vertical-range mt-3" oninput="updateValue('{{ id }}')">
+                    <div style="margin-top: 100px;"><span id="{{ id }}_value">0</span></div>
+                </div>
+                {% endfor %}
+                
+
+            </div>
+            
+            <button type="submit" id="process-button" class="btn btn-block mt-4" onclick="showLoading()" disabled>Process</button>
+        </form>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("audio-waveform");
+        const ctx = canvas.getContext("2d");
+
     
-        <h2>Equalizer Settings</h2>
-        
-        <label for="sub_bass_gain">Sub-bass (20–60 Hz)</label>
-        <input type="range" id="sub_bass_gain" name="sub_bass_gain" min="-10" max="10" value="0"><br>
-        
-        <label for="bass_gain">Bass (60–250 Hz)</label>
-        <input type="range" id="bass_gain" name="bass_gain" min="-10" max="10" value="0"><br>
-        
-        <label for="low_mid_gain">Low-mid (250–500 Hz)</label>
-        <input type="range" id="low_mid_gain" name="low_mid_gain" min="-10" max="10" value="0"><br>
-        
-        <label for="mid_gain">Mid (500–2000 Hz)</label>
-        <input type="range" id="mid_gain" name="mid_gain" min="-10" max="10" value="0"><br>
-        
-        <label for="upper_mid_gain">Upper-mid (2000–4000 Hz)</label>
-        <input type="range" id="upper_mid_gain" name="upper_mid_gain" min="-10" max="10" value="0"><br>
-        
-        <label for="presence_gain">Presence (4000–6000 Hz)</label>
-        <input type="range" id="presence_gain" name="presence_gain" min="-10" max="10" value="0"><br>
-        
-        <label for="brilliance_gain">Brilliance (6000–20000 Hz)</label>
-        <input type="range" id="brilliance_gain" name="brilliance_gain" min="-10" max="10" value="0"><br>
-    
-        <button type="submit">Process</button>
-    </form>
-    
+        function updateValue(id) {
+            document.getElementById(id + '_value').textContent = document.getElementById(id).value;
+        }
+
+        function checkFileUploaded() {
+            // Enable the Process button only if a file is selected
+            const fileInput = document.getElementById("file-input");
+            document.getElementById("process-button").disabled = !fileInput.files.length;
+            // Initialize audio context and start visualizing
+            if (fileInput.files.length) {
+                visualizeWaveform(fileInput.files[0]);
+            }
+        }
+
+        function showLoading() {
+            // Show loading overlay when processing starts
+            document.getElementById("loading-overlay").classList.remove("d-none");
+            // updateProgress()
+        }
+
+        // function updateProgress() {
+        //     const progressDisplay = document.getElementById("progress-percentage");
+        //     let progress = 0;
+
+        //     // Simulate progress update
+        //     const interval = setInterval(() => {
+        //         if (progress < 100) {
+        //             progress += 10; // Increment progress
+        //             progressDisplay.textContent = progress + "%"; // Update progress percentage
+        //         } else {
+        //             clearInterval(interval);
+        //             document.getElementById("loading-overlay").classList.add("d-none"); // Hide overlay when done
+        //             alert("Processing Complete!");
+        //         }
+        //     }, 300); // Adjust timing as needed for a realistic effect
+        // }
+
+        // Hide loading overlay after submission for demo purposes
+        document.getElementById("equalizer-form").addEventListener("submit", function(event) {
+            event.preventDefault(); // Prevents actual form submission here for testing
+            setTimeout(() => {
+                document.getElementById("loading-overlay").classList.add("d-none");
+                alert("Processing Complete!"); // Mocking form processing
+            }, 2000);
+        });
+        // Visualize audio waveform
+        function visualizeWaveform(file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const arrayBuffer = event.target.result;
+
+                // Initialize audio context
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                audioContext.decodeAudioData(arrayBuffer, function(buffer) {
+                    const data = buffer.getChannelData(0); // Get waveform data from the first channel
+                    drawWaveform(data);
+                });
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // Draw the audio waveform as a sine wave
+        function drawWaveform(data) {
+            const width = canvas.width;
+            const height = canvas.height;
+            ctx.clearRect(0, 0, width, height);
+
+            const step = Math.ceil(data.length / width);
+            const amp = height / 2;
+
+            ctx.beginPath();
+            ctx.moveTo(0, amp);
+
+            for (let i = 0; i < width; i++) {
+                let min = 1.0; // Change const to let
+                let max = -1.0; // Change const to let
+
+                for (let j = 0; j < step; j++) {
+                    const datum = data[i * step + j];
+                    if (datum < min) min = datum;
+                    if (datum > max) max = datum;
+                }
+
+                // Calculate the midpoint and scale to fit the canvas
+                ctx.lineTo(i, (1 + min) * amp);
+                ctx.lineTo(i, (1 + max) * amp);
+            }
+            ctx.lineTo(width, height);
+            ctx.lineTo(0, height);
+            ctx.fillStyle = "#ff6f00"; // Change to desired fill color
+            ctx.fill();
+        }
+
+        // Resize canvas for responsiveness
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth * 0.95; // Adjust width based on your layout
+            canvas.height = 200; // Set a fixed height
+            if (document.getElementById("file-input").files.length) {
+                const file = document.getElementById("file-input").files[0];
+                visualizeWaveform(file);
+            }
+        });
+
+        // Set initial canvas size
+        canvas.width = window.innerWidth * 0.95; // Adjust width based on your layout
+        canvas.height = 200; // Set a fixed height
+    </script>
 </body>
 </html>

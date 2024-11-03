@@ -1,28 +1,125 @@
 body {
+    background-color: #3C3D37;
+    color: #e0e0e0;
     font-family: Arial, sans-serif;
+    height: 100vh;
+    overflow-y: auto;
+}
+
+#equalizer-form {
+    background-color: #697565;
+    max-width: 1500px;
+}
+
+#process-button {
+    background-color: #ECDFCC;
+}
+
+#loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin: 20px;
 }
-h1, h2 {
-    color: #333;
+
+/* Center the form in the viewport */
+.d-flex {
+    /* height: 100vh; */
+    overflow-y: auto;
 }
+
 form {
-    margin: 20px 0;
+    /* max-width: 700px; */
+}
+
+.slider-container {
     display: flex;
     flex-direction: column;
     align-items: center;
+    padding: 10px;
+    width: 250px !important;
 }
-input[type="range"] {
-    width: 300px;
-    margin: 10px 0;
-}
-button {
-    padding: 10px 20px;
-    font-size: 16px;
-}
-img {
-    width: 80%;
+
+.vertical-range {
+    width: 180px;
+    height: 8px;
+    transform: rotate(-90deg);
+    appearance: none;
     margin: 20px 0;
+    margin-top: 85px !important;
+}
+
+.vertical-range::-webkit-slider-thumb,
+.vertical-range::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    background-color: #ff6f00;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.vertical-range::-webkit-slider-runnable-track,
+.vertical-range::-moz-range-track {
+    background-color: #e0e0e0;
+    height: 6px;
+    border-radius: 5px;
+}
+
+/* Style for file input */
+.form-control-file {
+    border: 2px dashed #ff6f00; /* Dashed border */
+    background-color: #1e1e1e; /* Dark background */
+    color: #e0e0e0; /* Light text color */
+    padding: 10px; /* Padding for the input */
+    border-radius: 5px; /* Rounded corners */
+    transition: border-color 0.3s; /* Smooth transition for border color */
+}
+
+.form-control-file:hover {
+    border-color: #ff9800; /* Change border color on hover */
+}
+/* Style for range input (sliders) */
+.custom-range {
+    appearance: none; /* Remove default styling */
+    width: 180px; /* Width of the slider */
+    height: 6px; /* Height of the track */
+    background: #555; /* Track color */
+    border-radius: 5px; /* Rounded corners */
+    outline: none; /* Remove outline */
+    transition: background 0.3s; /* Smooth transition */
+}
+
+.custom-range:hover {
+    background: #777; /* Change track color on hover */
+}
+
+/* Style for the slider thumb */
+.custom-range::-webkit-slider-thumb {
+    appearance: none; /* Remove default styling */
+    width: 14px; /* Width of the thumb */
+    height: 14px; /* Height of the thumb */
+    background: #ff6f00; /* Thumb color */
+    border-radius: 50%; /* Rounded thumb */
+    cursor: pointer; /* Pointer cursor on hover */
+}
+
+.custom-range::-moz-range-thumb {
+    width: 14px; /* Width of the thumb */
+    height: 14px; /* Height of the thumb */
+    background: #ff6f00; /* Thumb color */
+    border-radius: 50%; /* Rounded thumb */
+    cursor: pointer; /* Pointer cursor on hover */
+}
+
+/* Style for the thumb when focused */
+.custom-range:focus::-webkit-slider-thumb {
+    background: #ff9800; /* Change thumb color when focused */
+}
+
+.custom-range:focus::-moz-range-thumb {
+    background: #ff9800; /* Change thumb color when focused */
 }
