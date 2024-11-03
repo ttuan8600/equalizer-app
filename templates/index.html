@@ -3,61 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <title>Audio Processing with Equalizer</title>
+    <link rel="stylesheet" href="/static/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jplayer/2.9.2/skin/blue.monday/css/jplayer.blue.monday.css" integrity="sha512-hy+p5g5kWOE+l5AHCBmTo1gq1OetErrJK8u6TT2WQYUVmINNwzu9pu7oyG2f6S+qRJnbGcHu/QXpC2FV4sAvSg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <style>
-        /* Custom styling for form and headings */
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f9f9f9;
-            padding: 20px;
-        }
-
-        form {
-            max-width: 400px;
-            margin: 20px auto;
-            padding: 20px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        h2 {
-            color: #333;
-            text-align: center;
-            margin-bottom: 20px;
-            font-size: 18px;
-        }
-
-        label {
-            font-size: 14px;
-            color: #555;
-            margin-top: 10px;
-            display: block;
-        }
-
-        input[type="file"],
-        input[type="range"] {
-            width: 100%;
-            margin: 8px 0;
-        }
-
-        button[type="submit"] {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px;
-            width: 100%;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        button[type="submit"]:hover {
-            background-color: #45a049;
-        }
-    </style>
 </head>
 <body>
+    <!-- File upload form -->
+<!--    <form method="post" action="/" enctype="multipart/form-data">-->
+<!--        <input type="file" name="file" required>-->
+<!--        <button type="submit">Upload</button>-->
+<!--    </form>-->
+
     <div id="jquery_jplayer_1" class="jp-jplayer"></div>
     <div id="jp_container_1" class="jp-audio" role="application" aria-label="media player">
         <div class="jp-type-single">
@@ -87,7 +42,7 @@
                 </div>
             </div>
             <div class="jp-details">
-                <div class="jp-title" aria-label="title">Bubble</div>
+                <div class="jp-title" aria-label="title">Uploaded Audio</div>
             </div>
             <div class="jp-no-solution">
                 <span>Update Required</span>
@@ -99,12 +54,14 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jplayer/2.9.1/jplayer/jquery.jplayer.min.js" integrity="sha512-aZHE5UJPFxgk9Vq9dGfFp+Lu3lamANJ+Ta+XQD+b+SMaeIkG508+PlT4KXb71bT/STAQv5Ul7g+lzvFJgz+Abw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script>
-        $(document).ready(function() {
+    $(document).ready(function() {
+        {% if uploaded_filename %}
+            const audioUrl = "{{ url_for('uploaded_file', filename=uploaded_filename) }}";
             $("#jquery_jplayer_1").jPlayer({
                 ready: function () {
                     $(this).jPlayer("setMedia", {
-                        title: "Player",
-                        mp3: "example.mp3" // Replace with the path to your audio file
+                        title: "Uploaded Audio",
+                        mp3: audioUrl
                     });
                 },
                 cssSelectorAncestor: "#jp_container_1",
@@ -117,12 +74,14 @@
                 remainingDuration: true,
                 toggleDuration: true
             });
-        });
+        {% endif %}
+    });
     </script>
 
     <form method="post" action="{{ url_for('upload') }}" enctype="multipart/form-data">
-        <h2>Upload Audio File</h2>
-        <input type="file" name="file" accept=".wav" required><br><br>
+
+<!--    <form method="get" action="{{ url_for('process_audio', filename=uploaded_filename) }}">-->
+        <input type="file" name="file" required><br><br>
 
         <h2>Equalizer Settings</h2>
         <label for="sub_bass_gain">Sub-bass (20–60 Hz)</label>
