@@ -5,7 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Audio Processing with Equalizer</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/slider.css">
+    <link rel="stylesheet" href="/static/input_file.css">
+
 </head>
 <body>
     <!-- Loading overlay -->
@@ -20,9 +24,10 @@
         <form id="equalizer-form" method="post" action="{{ url_for('upload') }}" enctype="multipart/form-data" class="p-4 rounded shadow w-100">
             <h2 class="text-center text-light mb-4">Upload Audio File</h2>
 
-            <div class="form-group">
-                <input type="file" name="file" accept=".wav, .mp3" required class="form-control-file" id="file-input" onchange="checkFileUploaded()">
-
+            <div class="d-flex align-items-center justify-content-center">
+                <div class="form-input-file">    
+                    <input type="file" name="file" accept=".wav, .mp3" required id="file-input" onchange="checkFileUploaded()">
+                </div>
             </div>
 
             <!-- Container for audio waveform display -->
@@ -36,47 +41,59 @@
             <div class="container mt-4">
                 <h2 class="text-center">Record Audio and Display Waveform</h2>
                 <div class="text-center">
-                    <button id="start-recording" class="btn btn-primary">Start Recording</button>
-                    <button id="stop-recording" class="btn btn-danger" disabled>Stop Recording</button>
+                    <button id="start-recording" class="btn btn-success">
+                        <i class="fas fa-microphone"></i> Start Recording
+                    </button>
+                    <button id="stop-recording" class="btn btn-danger" disabled>
+                        <i class="fas fa-stop"></i> Stop Recording
+                    </button>                    
                 </div>
                 <div class="border border-warning rounded p-3 mt-2" style="height: 200px;">
                     <canvas id="waveform" class="w-100 h-100"></canvas>
                 </div>
             </div>
 
-            <h2 class="text-center text-light mt-4 mb-3">Equalizer Settings</h2>
+            <h2 class="text-center text-light mt-4 mb-3">Settings</h2>
             
-            <div class="d-flex justify-content-around" style="padding: 0 25px;">
-                {% for label, id in [("Sub-bass", "sub_bass_gain"), ("Bass", "bass_gain"), ("Low-mid", "low_mid_gain"), ("Mid", "mid_gain"), ("Upper-mid", "upper_mid_gain"), ("Presence", "presence_gain"), ("Brilliance", "brilliance_gain")] %}
-                <div class="text-center text-light slider-container">
-                    <label for="{{ id }}">{{ label }}<br>({{ ranges[id] }})</label>
-                    <input type="range" id="{{ id }}" name="{{ id }}" min="-10" max="10" value="0" class="custom-range vertical-range mt-3" oninput="updateValue('{{ id }}')">
-                    <div style="margin-top: 100px;"><span id="{{ id }}_value">0</span></div>
-                </div>
-                {% endfor %}
+            <div class="d-flex justify-content-around">
+                <fieldset>
+                    <legend>Equalizer</legend>
+                    <div class="equalizer-container">
+                        <label orient='270deg' type='range' for="band" before="-10" after="10">0</label>
+                        {% for label, id in [("Sub-bass", "sub_bass_gain"), ("Bass", "bass_gain"), ("Low-mid", "low_mid_gain"), ("Mid", "mid_gain"), ("Upper-mid", "upper_mid_gain"), ("Presence", "presence_gain"), ("Brilliance", "brilliance_gain")] %}
+                        <div class="slider-container text-center">
+                            <label for="{{ id }}">{{ label }}<br><span style="font-size: 12px;">({{ ranges[id] }})</span></label>
+                            <input orient='270deg' type="range" id="{{ id }}" name="{{ id }}" min="-10" max="10" value="0" step="1" oninput="updateValue('{{ id }}')" />
+                            <span id="{{ id }}_value">0</span>
+                        </div>
+                        {% endfor %}
+                        <label orient='90deg' type='range' for="band" before="10" after="-10">0</label>
+                    </div>
+                </fieldset>
             </div>
-            <div style= "text-align: center;" >
-                <button id="fun-button" type="button" style="font-size: 15px; padding: 10px 20px; border-radius: 8px; background-color: #4CAF50; color: white; border: none;" onclick="mode('fun')">
-                    😄 Fun
+            <div class="pt-3" style= "text-align: center;" >
+                <button id="fun-button" type="button" style="width: 140px; font-size: 15px; padding: 10px 20px; border-radius: 8px; background-color: #4CAF50; color: white; border: none;" onclick="mode('fun')">
+                    <i class="fa-regular fa-face-smile"></i> Fun
                 </button>
-                <button id="sad-button" type="button" style="font-size: 15px; padding: 10px 20px; border-radius: 8px; background-color: #007BFF; color: white; border: none;" onclick="mode('sad')">
-                    😢 Sad
+                <button id="sad-button" type="button" style="width: 140px; font-size: 15px; padding: 10px 20px; border-radius: 8px; background-color: #007BFF; color: white; border: none;" onclick="mode('sad')">
+                    <i class="fa-regular fa-face-frown-open"></i> Sad
                 </button>
-                <button id="horror-button" type="button" style="font-size: 15px; padding: 10px 20px; border-radius: 8px; background-color: #8B0000; color: white; border: none;" onclick="mode('horror')">
-                    👻 Horror
+                <button id="horror-button" type="button" style="width: 140px; font-size: 15px; padding: 10px 20px; border-radius: 8px; background-color: #8B0000; color: white; border: none;" onclick="mode('horror')">
+                    <i class="fa-solid fa-ghost"></i> Horror
                 </button>
-                <button id="bass-boost-button" type="button" style="font-size: 15px; padding: 10px 20px; border-radius: 8px; background-color: #e55fc8; color: white; border: none;" onclick="mode('bass_boost')">
-                    🎵 Fever
+                <button id="bass-boost-button" type="button" style="width: 140px; font-size: 15px; padding: 10px 20px; border-radius: 8px; background-color: #e55fc8; color: white; border: none;" onclick="mode('bass_boost')">
+                    <i class="fa-solid fa-music"></i> Fever
                 </button>
                 
             </div>
-            <button type="submit" id="process-button" class="btn btn-block mt-4" onclick="showLoading()" disabled>Process</button>
+            <div class="d-flex justify-content-center">
+                <button type="submit" id="process-button" class="btn mt-4" onclick="showLoading()" disabled>
+                    <i class="fa-solid fa-sliders"></i> Process
+                </button>
+            </div>
         </form>
         
     </div>
-
-   
-    
 
     <script>
         const audioWaveformCanvas = document.getElementById("audio-waveform");
@@ -320,8 +337,8 @@
                 });
         });
         // Set initial canvas size
-        canvas.width = window.innerWidth * 0.95; // Adjust width based on your layout
-        canvas.height = 200; // Set a fixed height
+        // canvas.width = window.innerWidth * 0.95; // Adjust width based on your layout
+        // canvas.height = 200; // Set a fixed height
 
         function mode(mood) {
         // Định nghĩa giá trị thanh trượt cho từng chế độ
