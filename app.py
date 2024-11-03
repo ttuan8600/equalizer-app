@@ -101,11 +101,15 @@ def process_audio(filename):
     plot_filter_response()
 
     return render_template("result.html",
-                           audioUrl=output_path,
-                           filename="output.png",
+                           filename=fn,
+                           outputFile="output.png",
                            spectrogram="spectrogram.png",
                            filter_response="filter_response.png",
                            frequency_comparison="frequency_comparison.png")
+
+@app.route("/uploads/<filename>")
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 
 def apply_equalizer(data, rate, gains):

@@ -11,7 +11,7 @@
 <body>
     <h1>Audio Processing Result</h1>
     <h2>Waveform</h2>
-    <img src="{{ url_for('static', filename=filename) }}" alt="Processed Audio">
+    <img src="{{ url_for('static', filename=outputFile) }}" alt="Processed Audio">
 
     <h2>Spectrogram</h2>
     <img src="{{ url_for('static', filename=spectrogram) }}" alt="Spectrogram">
@@ -71,7 +71,7 @@
                 ready: function () {
                     $(this).jPlayer("setMedia", {
                         title: "Uploaded Audio",
-                        mp3: "../{{audioUrl}}"
+                        mp3: "{{ url_for('uploaded_file', filename=filename) }}"
                     });
                 },
                 cssSelectorAncestor: "#jp_container_1",
