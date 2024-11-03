@@ -92,13 +92,14 @@
         // }
 
         // Hide loading overlay after submission for demo purposes
-        document.getElementById("equalizer-form").addEventListener("submit", function(event) {
-            event.preventDefault(); // Prevents actual form submission here for testing
-            setTimeout(() => {
-                document.getElementById("loading-overlay").classList.add("d-none");
-                alert("Processing Complete!"); // Mocking form processing
-            }, 2000);
-        });
+        // document.getElementById("equalizer-form").addEventListener("submit", function(event) {
+        //     event.preventDefault(); // Prevents actual form submission here for testing
+        //     setTimeout(() => {
+        //         document.getElementById("loading-overlay").classList.add("d-none");
+        //         alert("Processing Complete!"); // Mocking form processing
+        //     }, 2000);
+        // });
+        
         // Visualize audio waveform
         function visualizeWaveform(file) {
             const reader = new FileReader();
