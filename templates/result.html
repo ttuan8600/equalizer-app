@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <title>Result</title>
     <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
     <h1>Audio Processing Result</h1>
@@ -19,7 +21,8 @@
     <h2>Frequency Domain Comparison</h2>
     <img src="{{ url_for('static', filename=frequency_comparison) }}" alt="Frequency Domain Comparison">
 
-    <a href="/">Process Another File</a>
+    <!-- <a href="/">Process Another File</a> -->
 
+    <button id="process-button" class="btn btn-block mt-4" onclick="location.href='/'">Process Another File</button>
 </body>
 </html>
