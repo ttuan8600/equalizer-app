@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, redirect, url_for
+from flask import Flask, request, render_template, redirect, url_for, jsonify
 import os
 import numpy as np
 import scipy.signal as signal
@@ -9,18 +9,31 @@ from scipy.io import wavfile
 import librosa
 import librosa.display
 from werkzeug.utils import secure_filename
-
+import wave
+from pydub import AudioSegment
+import io
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads/'
 
 # Trang chủ để tải file và chọn bộ lọc
 @app.route("/", methods=["GET", "POST"])
 def index():
-    return render_template("index.html")
+    ranges = {
+        "sub_bass_gain": "20–60 Hz",
+        "bass_gain": "60–250 Hz",
+        "low_mid_gain": "250–500 Hz",
+        "mid_gain": "500–2000 Hz",
+        "upper_mid_gain": "2000–4000 Hz",
+        "presence_gain": "4000–6000 Hz",
+        "brilliance_gain": "6000–11000 Hz"
+    }
+    return render_template("index.html", ranges=ranges)
 
 @app.route("/upload", methods=["POST"])
 def upload():
     file = request.files["file"]
+    if not file:
+        file = request.files.get("recorded_audio")
     filename = secure_filename(file.filename)
     filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
     file.save(filepath)
@@ -83,6 +96,9 @@ def process_audio(filename):
                            frequency_comparison="frequency_comparison.png")
 
 def apply_equalizer(data, rate, gains):
+     # Kiểm tra nếu dữ liệu đầu vào là rỗng
+    if data.size == 0:
+        return np.array([], dtype=np.int16)  # Trả về mảng rỗng có kiểu int16
     if all(gain == 0 for gain in gains):
         return data
     
@@ -181,6 +197,43 @@ def plot_frequency_domain_comparison(original_data, filtered_data, rate):
     plt.grid()
     plt.savefig("static/frequency_comparison.png")
     plt.close()
+
+
+
+@app.route('/rec_audio', methods=['POST'])
+def rec_audio():
+    if 'audio_data' not in request.files:
+        return jsonify({"error": "No audio file found"}), 400
+
+    audio_file = request.files['audio_data']
+    
+    # Convert audio blob to WAV format
+    audio = AudioSegment.from_file(io.BytesIO(audio_file.read()), format="wav")  # "webm" hoặc "ogg" tùy trình duyệt
+    audio = audio.set_channels(1)  # Đảm bảo âm thanh là mono (1 kênh)
+    wav_data = io.BytesIO()
+    audio.export(wav_data, format="wav")
+    wav_data.seek(0)
+
+    # Extract waveform data
+    waveform_data = extract_waveform_data(wav_data)
+    return jsonify(waveform_data)
+
+
+def extract_waveform_data(file_path):
+    with wave.open(file_path, 'rb') as wf:
+        n_frames = wf.getnframes()
+        frame_rate = wf.getframerate()
+        audio_data = wf.readframes(n_frames)
+        audio_data = np.frombuffer(audio_data, dtype=np.int16)
+        
+        # Downsample for faster rendering
+        downsample_factor = max(1, len(audio_data) // 1000)
+        audio_data = audio_data[::downsample_factor]
+        
+        return {
+            "frame_rate": frame_rate,
+            "data": audio_data.tolist()
+        }
 
 if __name__ == "__main__":
     app.run(debug=True)
