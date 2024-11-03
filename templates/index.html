@@ -3,138 +3,150 @@
 <head>
     <meta charset="UTF-8">
     <title>Audio Processing with Equalizer</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jplayer/2.9.2/skin/blue.monday/css/jplayer.blue.monday.css" integrity="sha512-hy+p5g5kWOE+l5AHCBmTo1gq1OetErrJK8u6TT2WQYUVmINNwzu9pu7oyG2f6S+qRJnbGcHu/QXpC2FV4sAvSg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        /* Custom styling for form and headings */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            padding: 20px;
+        }
+
+        form {
+            max-width: 400px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+
+        label {
+            font-size: 14px;
+            color: #555;
+            margin-top: 10px;
+            display: block;
+        }
+
+        input[type="file"],
+        input[type="range"] {
+            width: 100%;
+            margin: 8px 0;
+        }
+
+        button[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            width: 100%;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #45a049;
+        }
+    </style>
 </head>
 <body>
-     <audio id="audio" controls>
-        <source src="/audio" type="audio/wav">
-        Your browser does not support the audio element.
-    </audio>
-    <canvas id="visualizer"></canvas>
+    <div id="jquery_jplayer_1" class="jp-jplayer"></div>
+    <div id="jp_container_1" class="jp-audio" role="application" aria-label="media player">
+        <div class="jp-type-single">
+            <div class="jp-gui jp-interface">
+                <div class="jp-controls">
+                    <button class="jp-play" role="button" tabindex="0">play</button>
+                    <button class="jp-stop" role="button" tabindex="0">stop</button>
+                </div>
+                <div class="jp-progress">
+                    <div class="jp-seek-bar">
+                        <div class="jp-play-bar"></div>
+                    </div>
+                </div>
+                <div class="jp-volume-controls">
+                    <button class="jp-mute" role="button" tabindex="0">mute</button>
+                    <button class="jp-volume-max" role="button" tabindex="0">max volume</button>
+                    <div class="jp-volume-bar">
+                        <div class="jp-volume-bar-value"></div>
+                    </div>
+                </div>
+                <div class="jp-time-holder">
+                    <div class="jp-current-time" role="timer" aria-label="time">00:00</div>
+                    <div class="jp-duration" role="timer" aria-label="duration">-03:29</div>
+                    <div class="jp-toggles">
+                        <button class="jp-repeat" role="button" tabindex="0">repeat</button>
+                    </div>
+                </div>
+            </div>
+            <div class="jp-details">
+                <div class="jp-title" aria-label="title">Bubble</div>
+            </div>
+            <div class="jp-no-solution">
+                <span>Update Required</span>
+                To play the media you will need to either update your browser to a recent version or update your <a href="http://get.adobe.com/flashplayer/" target="_blank">Flash plugin</a>.
+            </div>
+        </div>
+    </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jplayer/2.9.1/jplayer/jquery.jplayer.min.js" integrity="sha512-aZHE5UJPFxgk9Vq9dGfFp+Lu3lamANJ+Ta+XQD+b+SMaeIkG508+PlT4KXb71bT/STAQv5Ul7g+lzvFJgz+Abw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script>
-        const audio = document.getElementById('audio');
-        const canvas = document.getElementById('visualizer');
-        const canvasCtx = canvas.getContext('2d');
-
-        // Set up audio context and analyser
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const analyser = audioCtx.createAnalyser();
-        analyser.fftSize = 256; // Larger FFT size for better frequency resolution
-        const bufferLength = analyser.frequencyBinCount;
-        const dataArray = new Uint8Array(bufferLength);
-
-        // 30 bands setting
-        const bandCount = 30;
-        const bandWidth = Math.floor(bufferLength / bandCount);
-
-        // Connect audio to analyser
-        const source = audioCtx.createMediaElementSource(audio);
-        source.connect(analyser);
-        analyser.connect(audioCtx.destination);
-
-        // Grid and box settings
-        const gridSpacingX = canvas.width / bandCount; // Adjust grid spacing for 30 bands
-        const gridSpacingY = 10; // Vertical spacing of grid boxes (box height)
-
-        // Function to draw the background grid
-        function drawGrid() {
-            const gridHeight = canvas.height;
-            const gridWidth = canvas.width;
-
-            canvasCtx.fillStyle = '#333';
-            for (let x = 0; x < gridWidth; x += gridSpacingX) {
-                for (let y = 0; y < gridHeight; y += gridSpacingY) {
-                    canvasCtx.fillRect(x, y, gridSpacingX - 1, gridSpacingY - 1);
-                }
-            }
-        }
-
-        // Function to draw the frequency bars as stacked boxes
-        function drawBars() {
-            analyser.getByteFrequencyData(dataArray);
-
-            let x = 0;
-
-            for (let i = 0; i < bandCount; i++) {
-                // Calculate the average amplitude for each band
-                let sum = 0;
-                for (let j = 0; j < bandWidth; j++) {
-                    sum += dataArray[i * bandWidth + j];
-                }
-                const average = sum / bandWidth;
-
-                // Determine the number of boxes to fill based on the average amplitude
-                const boxCount = Math.floor((average / 255) * (canvas.height / gridSpacingY));
-
-                // Draw each box in the column
-                for (let j = 0; j < boxCount; j++) {
-                    const y = canvas.height - (j + 1) * gridSpacingY;
-
-                    // Color gradient from green to yellow to red
-                    const r = Math.min(255, (j / boxCount) * 255);
-                    const g = Math.max(0, 255 - (j / boxCount) * 255);
-                    const b = 50;
-
-                    canvasCtx.fillStyle = `rgb(${r}, ${g}, ${b})`;
-                    canvasCtx.fillRect(x, y, gridSpacingX - 1, gridSpacingY - 1);
-                }
-
-                x += gridSpacingX; // Move to the next column
-            }
-        }
-
-        // Main drawing function that combines grid and stacked boxes
-        function draw() {
-            requestAnimationFrame(draw);
-
-            // Clear the canvas
-            canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Draw grid background
-            drawGrid();
-
-            // Draw frequency bars as stacked boxes
-            drawBars();
-        }
-
-        // Start drawing on play
-        audio.onplay = () => {
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
-            draw();
-        };
+        $(document).ready(function() {
+            $("#jquery_jplayer_1").jPlayer({
+                ready: function () {
+                    $(this).jPlayer("setMedia", {
+                        title: "Player",
+                        mp3: "example.mp3" // Replace with the path to your audio file
+                    });
+                },
+                cssSelectorAncestor: "#jp_container_1",
+                swfPath: "/js",
+                supplied: "mp3",
+                useStateClassSkin: true,
+                autoBlur: false,
+                smoothPlayBar: true,
+                keyEnabled: true,
+                remainingDuration: true,
+                toggleDuration: true
+            });
+        });
     </script>
+
     <form method="post" action="{{ url_for('upload') }}" enctype="multipart/form-data">
         <h2>Upload Audio File</h2>
         <input type="file" name="file" accept=".wav" required><br><br>
-    
+
         <h2>Equalizer Settings</h2>
-        
         <label for="sub_bass_gain">Sub-bass (20–60 Hz)</label>
         <input type="range" id="sub_bass_gain" name="sub_bass_gain" min="-10" max="10" value="0"><br>
-        
+
         <label for="bass_gain">Bass (60–250 Hz)</label>
         <input type="range" id="bass_gain" name="bass_gain" min="-10" max="10" value="0"><br>
-        
+
         <label for="low_mid_gain">Low-mid (250–500 Hz)</label>
         <input type="range" id="low_mid_gain" name="low_mid_gain" min="-10" max="10" value="0"><br>
-        
+
         <label for="mid_gain">Mid (500–2000 Hz)</label>
         <input type="range" id="mid_gain" name="mid_gain" min="-10" max="10" value="0"><br>
-        
+
         <label for="upper_mid_gain">Upper-mid (2000–4000 Hz)</label>
         <input type="range" id="upper_mid_gain" name="upper_mid_gain" min="-10" max="10" value="0"><br>
-        
+
         <label for="presence_gain">Presence (4000–6000 Hz)</label>
         <input type="range" id="presence_gain" name="presence_gain" min="-10" max="10" value="0"><br>
-        
+
         <label for="brilliance_gain">Brilliance (6000–20000 Hz)</label>
         <input type="range" id="brilliance_gain" name="brilliance_gain" min="-10" max="10" value="0"><br>
-    
+
         <button type="submit">Process</button>
     </form>
-    
 </body>
 </html>
