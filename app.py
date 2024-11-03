@@ -25,7 +25,7 @@ def index():
         "mid_gain": "500–2000 Hz",
         "upper_mid_gain": "2000–4000 Hz",
         "presence_gain": "4000–6000 Hz",
-        "brilliance_gain": "6000–20000 Hz"
+        "brilliance_gain": "6000–11000 Hz"
     }
     return render_template("index.html", ranges=ranges)
 
@@ -96,6 +96,9 @@ def process_audio(filename):
                            frequency_comparison="frequency_comparison.png")
 
 def apply_equalizer(data, rate, gains):
+     # Kiểm tra nếu dữ liệu đầu vào là rỗng
+    if data.size == 0:
+        return np.array([], dtype=np.int16)  # Trả về mảng rỗng có kiểu int16
     if all(gain == 0 for gain in gains):
         return data
     

@@ -123,3 +123,11 @@ form {
 .custom-range:focus::-moz-range-thumb {
     background: #ff9800; /* Change thumb color when focused */
 }
+
+@media (max-width: 768px) {
+    /* Định dạng cho các thiết bị di động */
+    .your-class {
+        font-size: 14px;
+        padding: 10px;
+    }
+}

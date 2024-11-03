@@ -49,5 +49,56 @@ class TestEqualizer(unittest.TestCase):
         # Đảm bảo tín hiệu đầu ra nằm trong khoảng int16
         self.assertTrue(np.all(filtered_data <= 32767) and np.all(filtered_data >= -32768))
 
+    def test_equalizer_single_band_positive_gain(self):
+        # Kiểm tra khi chỉ có một băng tần có gain dương
+        gains = [5, 0, 0, 0, 0, 0, 0]
+        filtered_data = apply_equalizer(self.data, self.rate, gains)
+        # Đảm bảo tín hiệu thay đổi so với đầu vào
+        self.assertFalse(np.array_equal(self.data, filtered_data))
+
+    def test_equalizer_single_band_negative_gain(self):
+        # Kiểm tra khi chỉ có một băng tần có gain âm
+        gains = [-5, 0, 0, 0, 0, 0, 0]
+        filtered_data = apply_equalizer(self.data, self.rate, gains)
+        # Đảm bảo tín hiệu thay đổi so với đầu vào
+        self.assertFalse(np.array_equal(self.data, filtered_data))
+
+    def test_equalizer_mixed_gain(self):
+        # Kiểm tra khi có cả gain dương và âm
+        gains = [2, -2, 3, -3, 1, -1, 0]
+        filtered_data = apply_equalizer(self.data, self.rate, gains)
+        # Đảm bảo tín hiệu thay đổi so với đầu vào
+        self.assertFalse(np.array_equal(self.data, filtered_data))
+
+    def test_equalizer_extreme_gain(self):
+        # Kiểm tra khi gain cực đại (kiểm tra hiện tượng clipping)
+        gains = [10, 10, 10, 10, 10, 10, 10]
+        filtered_data = apply_equalizer(self.data, self.rate, gains)
+        # Đảm bảo tín hiệu đầu ra nằm trong khoảng int16
+        self.assertTrue(np.all(filtered_data <= 32767) and np.all(filtered_data >= -32768))
+
+    def test_zero_length_input(self):
+        # Kiểm tra khi tín hiệu đầu vào có độ dài 0
+        gains = [1, 1, 1, 1, 1, 1, 1]
+        data = np.array([], dtype=np.int16)
+        filtered_data = apply_equalizer(data, self.rate, gains)
+        # Đảm bảo đầu ra cũng có độ dài 0
+        self.assertEqual(len(filtered_data), 0)
+
+    def test_large_input_data(self):
+        # Kiểm tra trên tín hiệu đầu vào lớn
+        large_data = np.random.randint(-32768, 32767, size=10**6, dtype=np.int16)  # Tín hiệu ngẫu nhiên lớn
+        gains = [1, 1, 1, 1, 1, 1, 1]
+        filtered_data = apply_equalizer(large_data, self.rate, gains)
+        # Đảm bảo đầu ra có cùng độ dài
+        self.assertEqual(len(filtered_data), len(large_data))
+
+    def test_high_frequency_band_gain(self):
+        # Kiểm tra khi chỉ băng tần brilliance có gain
+        gains = [0, 0, 0, 0, 0, 0, 5]
+        filtered_data = apply_equalizer(self.data, self.rate, gains)
+        # Đảm bảo tín hiệu thay đổi ở băng tần cao
+        self.assertFalse(np.array_equal(self.data, filtered_data))
+
 if __name__ == "__main__":
     unittest.main()
