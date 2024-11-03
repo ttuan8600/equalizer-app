@@ -44,10 +44,28 @@
                 
 
             </div>
-            
+            <div>
+                <button id="fun-button" type="button" style="font-size: 24px; padding: 10px 20px; border-radius: 8px; background-color: #4CAF50; color: white; border: none;" onclick="mode('fun')">
+                    😄 Fun
+                </button>
+                <button id="sad-button" type="button" style="font-size: 24px; padding: 10px 20px; border-radius: 8px; background-color: #007BFF; color: white; border: none;" onclick="mode('sad')">
+                    😢 Sad
+                </button>
+                <button id="horror-button" type="button" style="font-size: 24px; padding: 10px 20px; border-radius: 8px; background-color: #8B0000; color: white; border: none;" onclick="mode('horror')">
+                    👻 Horror
+                </button>
+                <button id="bass-boost-button" type="button" style="font-size: 24px; padding: 10px 20px; border-radius: 8px; background-color: #FF4500; color: white; border: none;" onclick="mode('bass_boost')">
+                    💓 Fever
+                </button>
+                
+            </div>
             <button type="submit" id="process-button" class="btn btn-block mt-4" onclick="showLoading()" disabled>Process</button>
         </form>
+        
     </div>
+
+   
+    
 
     <script>
         const canvas = document.getElementById("audio-waveform");
@@ -161,6 +179,69 @@
         // Set initial canvas size
         canvas.width = window.innerWidth * 0.95; // Adjust width based on your layout
         canvas.height = 200; // Set a fixed height
+
+        function mode(mood) {
+        // Định nghĩa giá trị thanh trượt cho từng chế độ
+            const modes = {
+                fun: {
+                    "sub_bass_gain": 3,
+                    "bass_gain": 2,
+                    "low_mid_gain": 0,
+                    "mid_gain": 4,
+                    "upper_mid_gain": 5,
+                    "presence_gain": 6,
+                    "brilliance_gain": 5
+                },
+                sad: {
+                    "sub_bass_gain": 5,
+                    "bass_gain": 4,
+                    "low_mid_gain": 0,
+                    "mid_gain": -2,
+                    "upper_mid_gain": -3,
+                    "presence_gain": -2,
+                    "brilliance_gain": -3
+                },
+                // horror: {
+                //     "sub_bass_gain": 6,
+                //     "bass_gain": 3,
+                //     "low_mid_gain": 0,
+                //     "mid_gain": -4,
+                //     "upper_mid_gain": 0,
+                //     "presence_gain": 4,
+                //     "brilliance_gain": 6
+                // },
+                horror: {
+                    "sub_bass_gain": -5,
+                    "bass_gain": -6,
+                    "low_mid_gain": -3,
+                    "mid_gain": -4,
+                    "upper_mid_gain": -5,
+                    "presence_gain": -6,
+                    "brilliance_gain": -7
+                },
+                bass_boost: {  // Hiệu ứng "Rung tim"
+                    "sub_bass_gain": 8,
+                    "bass_gain": 7,
+                    "low_mid_gain": 2,
+                    "mid_gain": 0,
+                    "upper_mid_gain": -2,
+                    "presence_gain": -3,
+                    "brilliance_gain": -5
+                }
+            };
+
+        // Lấy giá trị tương ứng với chế độ được truyền vào
+            const sliderValues = modes[mood];
+
+        // Cập nhật giá trị các thanh trượt
+            for (const [id, value] of Object.entries(sliderValues)) {
+                const slider = document.getElementById(id);
+                if (slider) {
+                    slider.value = value;
+                    document.getElementById(`${id}_value`).innerText = value;
+                    }
+                }
+        }
     </script>
 </body>
 </html>
