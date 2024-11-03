@@ -16,7 +16,16 @@ app.config['UPLOAD_FOLDER'] = 'uploads/'
 # Trang chủ để tải file và chọn bộ lọc
 @app.route("/", methods=["GET", "POST"])
 def index():
-    return render_template("index.html")
+    ranges = {
+        "sub_bass_gain": "20–60 Hz",
+        "bass_gain": "60–250 Hz",
+        "low_mid_gain": "250–500 Hz",
+        "mid_gain": "500–2000 Hz",
+        "upper_mid_gain": "2000–4000 Hz",
+        "presence_gain": "4000–6000 Hz",
+        "brilliance_gain": "6000–20000 Hz"
+    }
+    return render_template("index.html", ranges=ranges)
 
 @app.route("/upload", methods=["POST"])
 def upload():
