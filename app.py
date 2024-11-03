@@ -13,6 +13,7 @@ from werkzeug.utils import secure_filename
 import wave
 from pydub import AudioSegment
 import io
+
 app = Flask(__name__)
 UPLOAD_FOLDER = 'uploads/'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -73,7 +74,8 @@ def process_audio(filename):
 
     # Nếu có gain khác 0, tiến hành xử lý equalizer
     filtered_data = apply_equalizer(data, rate, gains)
-    output_path = os.path.join(app.config['UPLOAD_FOLDER'], "filtered_" + filename)
+    fn = "filtered_" + filename
+    output_path = os.path.join(app.config['UPLOAD_FOLDER'], fn)
     wavfile.write(output_path, rate, filtered_data.astype(np.int16))
 
     # Render biểu đồ phổ và waveform
@@ -99,19 +101,15 @@ def process_audio(filename):
     plot_filter_response()
 
     return render_template("result.html",
+                           audioUrl=output_path,
                            filename="output.png",
                            spectrogram="spectrogram.png",
                            filter_response="filter_response.png",
                            frequency_comparison="frequency_comparison.png")
 
 
-@app.route('/uploads/<filename>')
-def uploaded_file(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
-
-
 def apply_equalizer(data, rate, gains):
-     # Kiểm tra nếu dữ liệu đầu vào là rỗng
+    # Kiểm tra nếu dữ liệu đầu vào là rỗng
     if data.size == 0:
         return np.array([], dtype=np.int16)  # Trả về mảng rỗng có kiểu int16
     if all(gain == 0 for gain in gains):
@@ -215,13 +213,14 @@ def plot_frequency_domain_comparison(original_data, filtered_data, rate):
     plt.savefig("static/frequency_comparison.png")
     plt.close()
 
+
 @app.route('/rec_audio', methods=['POST'])
 def rec_audio():
     if 'audio_data' not in request.files:
         return jsonify({"error": "No audio file found"}), 400
 
     audio_file = request.files['audio_data']
-    
+
     # Convert audio blob to WAV format
     audio = AudioSegment.from_file(io.BytesIO(audio_file.read()), format="wav")  # "webm" hoặc "ogg" tùy trình duyệt
     audio = audio.set_channels(1)  # Đảm bảo âm thanh là mono (1 kênh)
@@ -240,15 +239,16 @@ def extract_waveform_data(file_path):
         frame_rate = wf.getframerate()
         audio_data = wf.readframes(n_frames)
         audio_data = np.frombuffer(audio_data, dtype=np.int16)
-        
+
         # Downsample for faster rendering
         downsample_factor = max(1, len(audio_data) // 1000)
         audio_data = audio_data[::downsample_factor]
-        
+
         return {
             "frame_rate": frame_rate,
             "data": audio_data.tolist()
         }
+
 
 if __name__ == "__main__":
     app.run(debug=True)
