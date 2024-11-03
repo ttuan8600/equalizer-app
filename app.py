@@ -1,8 +1,9 @@
-from flask import Flask, request, render_template, redirect, url_for, jsonify
+from flask import Flask, request, render_template, redirect, url_for, send_from_directory, jsonify
 import os
 import numpy as np
 import scipy.signal as signal
 import matplotlib
+
 matplotlib.use('Agg')  # Chỉ định sử dụng back-end không cần GUI
 import matplotlib.pyplot as plt
 from scipy.io import wavfile
@@ -13,7 +14,13 @@ import wave
 from pydub import AudioSegment
 import io
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = 'uploads/'
+UPLOAD_FOLDER = 'uploads/'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# Ensure the upload folder exists
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
 
 # Trang chủ để tải file và chọn bộ lọc
 @app.route("/", methods=["GET", "POST"])
@@ -28,6 +35,7 @@ def index():
         "brilliance_gain": "6000–11000 Hz"
     }
     return render_template("index.html", ranges=ranges)
+
 
 @app.route("/upload", methods=["POST"])
 def upload():
@@ -52,6 +60,7 @@ def upload():
     # Chuyển hướng đến hàm process_audio để xử lý file
     gains_str = ",".join(map(str, gains))  # Chuyển đổi danh sách gains thành chuỗi
     return redirect(url_for("process_audio", filename=filename, gains=gains_str))
+
 
 @app.route("/process/<filename>")
 def process_audio(filename):
@@ -88,12 +97,18 @@ def process_audio(filename):
 
     # Gọi hàm vẽ đáp ứng tần số của các bộ lọc
     plot_filter_response()
-    
+
     return render_template("result.html",
                            filename="output.png",
                            spectrogram="spectrogram.png",
                            filter_response="filter_response.png",
                            frequency_comparison="frequency_comparison.png")
+
+
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
 
 def apply_equalizer(data, rate, gains):
      # Kiểm tra nếu dữ liệu đầu vào là rỗng
@@ -101,7 +116,7 @@ def apply_equalizer(data, rate, gains):
         return np.array([], dtype=np.int16)  # Trả về mảng rỗng có kiểu int16
     if all(gain == 0 for gain in gains):
         return data
-    
+
     # Các băng tần và độ lợi tương ứng từ form (sub_bass, bass, low_mid, mid, upper_mid, presence, brilliance)
     gains_dict = {
         'sub_bass': gains[0],
@@ -123,7 +138,7 @@ def apply_equalizer(data, rate, gains):
         'mid': [500, 2000],
         'upper_mid': [2000, 4000],
         'presence': [4000, 6000],
-        'brilliance': [6000, 11024],  
+        'brilliance': [6000, 11024],
     }
 
     # Tạo bản sao dữ liệu để áp dụng bộ lọc và điều chỉnh độ lợi
@@ -142,6 +157,7 @@ def apply_equalizer(data, rate, gains):
     # Chuẩn hóa dữ liệu sau khi cộng các băng tần
     filtered_data = np.clip(filtered_data, -32767, 32767)
     return filtered_data.astype(np.int16)
+
 
 def plot_filter_response():
     # Định nghĩa các tần số cắt cho từng băng tần
@@ -173,21 +189,22 @@ def plot_filter_response():
     plt.savefig("static/filter_response.png")
     plt.close()
 
+
 def plot_frequency_domain_comparison(original_data, filtered_data, rate):
     plt.figure(figsize=(12, 6))
 
     # Biến đổi Fourier cho tín hiệu đầu vào
     original_freq_data = np.fft.fft(original_data)
     original_freq = np.fft.fftfreq(len(original_freq_data), 1 / rate)
-    plt.plot(original_freq[:len(original_freq) // 2], 
-             np.abs(original_freq_data)[:len(original_freq) // 2], 
+    plt.plot(original_freq[:len(original_freq) // 2],
+             np.abs(original_freq_data)[:len(original_freq) // 2],
              label="Original Signal", color="blue")  # Thêm alpha ở đây
 
     # Biến đổi Fourier cho tín hiệu sau khi lọc
     filtered_freq_data = np.fft.fft(filtered_data)
     filtered_freq = np.fft.fftfreq(len(filtered_freq_data), 1 / rate)
-    plt.plot(filtered_freq[:len(filtered_freq) // 2], 
-             np.abs(filtered_freq_data)[:len(filtered_freq) // 2], 
+    plt.plot(filtered_freq[:len(filtered_freq) // 2],
+             np.abs(filtered_freq_data)[:len(filtered_freq) // 2],
              label="Filtered Signal", color="red", alpha=0.7)  # Thêm alpha ở đây
 
     plt.title("Frequency Domain Comparison of Original and Filtered Signals")
@@ -197,8 +214,6 @@ def plot_frequency_domain_comparison(original_data, filtered_data, rate):
     plt.grid()
     plt.savefig("static/frequency_comparison.png")
     plt.close()
-
-
 
 @app.route('/rec_audio', methods=['POST'])
 def rec_audio():

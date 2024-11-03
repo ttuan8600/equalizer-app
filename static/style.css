@@ -1,3 +1,43 @@
+/* Adjust the width of jPlayer container*/
+#jp_container_1 {
+    width: 600px;
+    margin: 0 auto;
+}
+
+.jp-controls,
+.jp-time-holder {
+    margin: 0 100px;
+}
+
+
+.jp-progress {
+    margin: 0 100px;
+    border-radius: 5px;
+}
+
+.jp-seek-bar, .jp-play-bar {
+    border-radius: 5px;
+}
+
+.jp-time-holder {
+    font-size: 14px;
+}
+
+.jp-volume-controls {
+    margin-left: 180px;
+}
+
+.jp-volume-bar, .jp-volume-bar-value {
+    border-radius: 5px;
+}
+
+/* .plyr__controls {
+background-color: #090404;
+border-radius: 5px;
+padding: 10px;
+padding: var(--plyr-control-spacing, 10px);
+}*/
+        
 body {
     background-color: #3C3D37;
     color: #e0e0e0;
