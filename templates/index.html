@@ -2,12 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Audio Processing with Equalizer</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="/static/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jplayer/2.9.2/skin/blue.monday/css/jplayer.blue.monday.css" integrity="sha512-hy+p5g5kWOE+l5AHCBmTo1gq1OetErrJK8u6TT2WQYUVmINNwzu9pu7oyG2f6S+qRJnbGcHu/QXpC2FV4sAvSg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
-    <!-- File upload form -->
+<!-- File upload form -->
 <!--    <form method="post" action="/" enctype="multipart/form-data">-->
 <!--        <input type="file" name="file" required>-->
 <!--        <button type="submit">Upload</button>-->
@@ -77,35 +79,381 @@
         {% endif %}
     });
     </script>
+    <!-- Loading overlay -->
+    <div id="loading-overlay" class="d-none align-items-center justify-content-center flex-column">
+        <div class="spinner-border text-light" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+        <div id="progress-percentage" class="text-light h4 mt-3">Progressing...</div>
+    </div>
 
-    <form method="post" action="{{ url_for('upload') }}" enctype="multipart/form-data">
+    <div class="d-flex justify-content-center align-items-center">
+        <form id="equalizer-form" method="post" action="{{ url_for('upload') }}" enctype="multipart/form-data" class="p-4 rounded shadow w-100">
+            <h2 class="text-center text-light mb-4">Upload Audio File</h2>
+            <div class="form-group">
+                <input type="file" name="file" accept=".wav, .mp3" required class="form-control-file" id="file-input" onchange="checkFileUploaded()">
+            </div>
+            
+            <!-- Container for audio waveform display -->
+            <div class="container mt-4">
+                <h3 class="text-center text-light">Uploaded Audio Waveform</h3>
+                <div class="border border-warning rounded p-3" style="height: 200px;">
+                    <canvas id="audio-waveform" class="w-100 h-100"></canvas>
+                </div>
+            </div>
 
-<!--    <form method="get" action="{{ url_for('process_audio', filename=uploaded_filename) }}">-->
-        <input type="file" name="file" required><br><br>
+            <div class="container mt-4">
+                <h2 class="text-center">Record Audio and Display Waveform</h2>
+                <div class="text-center">
+                    <button id="start-recording" class="btn btn-primary">Start Recording</button>
+                    <button id="stop-recording" class="btn btn-danger" disabled>Stop Recording</button>
+                </div>
+                <div class="border border-warning rounded p-3 mt-2" style="height: 200px;">
+                    <canvas id="waveform" class="w-100 h-100"></canvas>
+                </div>
+            </div>
 
-        <h2>Equalizer Settings</h2>
-        <label for="sub_bass_gain">Sub-bass (20–60 Hz)</label>
-        <input type="range" id="sub_bass_gain" name="sub_bass_gain" min="-10" max="10" value="0"><br>
+            <h2 class="text-center text-light mt-4 mb-3">Equalizer Settings</h2>
+            
+            <div class="d-flex justify-content-around" style="padding: 0 25px;">
+                {% for label, id in [("Sub-bass", "sub_bass_gain"), ("Bass", "bass_gain"), ("Low-mid", "low_mid_gain"), ("Mid", "mid_gain"), ("Upper-mid", "upper_mid_gain"), ("Presence", "presence_gain"), ("Brilliance", "brilliance_gain")] %}
+                <div class="text-center text-light slider-container">
+                    <label for="{{ id }}">{{ label }}<br>({{ ranges[id] }})</label>
+                    <input type="range" id="{{ id }}" name="{{ id }}" min="-10" max="10" value="0" class="custom-range vertical-range mt-3" oninput="updateValue('{{ id }}')">
+                    <div style="margin-top: 100px;"><span id="{{ id }}_value">0</span></div>
+                </div>
+                {% endfor %}
+            </div>
+            <div style= "text-align: center;" >
+                <button id="fun-button" type="button" style="font-size: 15px; padding: 10px 20px; border-radius: 8px; background-color: #4CAF50; color: white; border: none;" onclick="mode('fun')">
+                    😄 Fun
+                </button>
+                <button id="sad-button" type="button" style="font-size: 15px; padding: 10px 20px; border-radius: 8px; background-color: #007BFF; color: white; border: none;" onclick="mode('sad')">
+                    😢 Sad
+                </button>
+                <button id="horror-button" type="button" style="font-size: 15px; padding: 10px 20px; border-radius: 8px; background-color: #8B0000; color: white; border: none;" onclick="mode('horror')">
+                    👻 Horror
+                </button>
+                <button id="bass-boost-button" type="button" style="font-size: 15px; padding: 10px 20px; border-radius: 8px; background-color: #e55fc8; color: white; border: none;" onclick="mode('bass_boost')">
+                    🎵 Fever
+                </button>
+                
+            </div>
+            <button type="submit" id="process-button" class="btn btn-block mt-4" onclick="showLoading()" disabled>Process</button>
+        </form>
+        
+    </div>
 
-        <label for="bass_gain">Bass (60–250 Hz)</label>
-        <input type="range" id="bass_gain" name="bass_gain" min="-10" max="10" value="0"><br>
+   
+    
 
-        <label for="low_mid_gain">Low-mid (250–500 Hz)</label>
-        <input type="range" id="low_mid_gain" name="low_mid_gain" min="-10" max="10" value="0"><br>
+    <script>
+        const audioWaveformCanvas = document.getElementById("audio-waveform");
+        const audioWaveformCtx = audioWaveformCanvas.getContext("2d");
+        const recordingWaveformCanvas = document.getElementById("waveform");
+        const recordingWaveformCtx = recordingWaveformCanvas.getContext("2d");
+        
+        let mediaRecorder;
+        let audioChunks = [];
+        let audioContext;
+        let analyser;
+        let dataArray;
+        let isRecording = false;
 
-        <label for="mid_gain">Mid (500–2000 Hz)</label>
-        <input type="range" id="mid_gain" name="mid_gain" min="-10" max="10" value="0"><br>
+        const startButton = document.getElementById('start-recording');
+        const stopButton = document.getElementById('stop-recording');
 
-        <label for="upper_mid_gain">Upper-mid (2000–4000 Hz)</label>
-        <input type="range" id="upper_mid_gain" name="upper_mid_gain" min="-10" max="10" value="0"><br>
+        function updateValue(id) {
+            document.getElementById(id + '_value').textContent = document.getElementById(id).value;
+        }
 
-        <label for="presence_gain">Presence (4000–6000 Hz)</label>
-        <input type="range" id="presence_gain" name="presence_gain" min="-10" max="10" value="0"><br>
+        function checkFileUploaded() {
+            const fileInput = document.getElementById("file-input");
+            document.getElementById("process-button").disabled = !fileInput.files.length;
+            if (fileInput.files.length) {
+                visualizeWaveform(fileInput.files[0]);
+            }
+        }
 
-        <label for="brilliance_gain">Brilliance (6000–20000 Hz)</label>
-        <input type="range" id="brilliance_gain" name="brilliance_gain" min="-10" max="10" value="0"><br>
+        function showLoading() {
+            document.getElementById("loading-overlay").classList.remove("d-none");
+        }
 
-        <button type="submit">Process</button>
-    </form>
+        function visualizeWaveform(file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const arrayBuffer = event.target.result;
+                const offlineAudioContext = new (window.OfflineAudioContext || window.webkitOfflineAudioContext)(1, 44100 * 40, 44100);
+                
+                offlineAudioContext.decodeAudioData(arrayBuffer, function(buffer) {
+                    const data = buffer.getChannelData(0);
+                    drawWaveform(data, audioWaveformCanvas.id);
+                });
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function drawWaveform(data, canvasId) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext("2d");
+            const width = canvas.width;
+            const height = canvas.height;
+            ctx.clearRect(0, 0, width, height);
+
+            const step = Math.ceil(data.length / width);
+            const amp = height / 2;
+
+            ctx.beginPath();
+            ctx.moveTo(0, amp);
+
+            for (let i = 0; i < width; i++) {
+                let min = 1.0;
+                let max = -1.0;
+
+                for (let j = 0; j < step; j++) {
+                    const datum = data[i * step + j];
+                    if (datum < min) min = datum;
+                    if (datum > max) max = datum;
+                }
+
+                ctx.lineTo(i, (1 + min) * amp);
+                ctx.lineTo(i, (1 + max) * amp);
+            }
+            ctx.lineTo(width, height);
+            ctx.lineTo(0, height);
+            ctx.fillStyle = "#ff6f00";
+            ctx.fill();
+        }
+
+        startButton.addEventListener("click", startRecording);
+        stopButton.addEventListener("click", stopRecording);
+        let recordedAudioBlob = null; 
+        let wavRecored = null;
+        function startRecording() {
+            audioChunks = [];
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            analyser = audioContext.createAnalyser();
+            analyser.fftSize = 2048;
+            
+            dataArray = new Uint8Array(analyser.frequencyBinCount);
+            navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+                const source = audioContext.createMediaStreamSource(stream);
+                source.connect(analyser);
+                
+                mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder.ondataavailable = event => {
+                    audioChunks.push(event.data);
+                };
+                mediaRecorder.onstop = async () => {
+                    // Create a new Blob with the audio chunks
+                    recordedAudioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
+                    
+                    // Get the audio data as an array buffer
+                    const arrayBuffer = await recordedAudioBlob.arrayBuffer();
+                    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+
+                    // Convert to WAV format
+                    wavRecored = convertToWav(audioBuffer); // Use your WAV conversion function here
+                    const formData = new FormData();
+                    formData.append('audio_data', wavRecored);
+
+                    const response = await fetch('/rec_audio', { method: 'POST', body: formData });
+                    const waveformData = await response.json();
+
+                    drawWaveform(waveformData.data, "waveform"); // Vẽ vào canvas "waveform"
+                };
+                mediaRecorder.start();
+                isRecording = true;
+                drawRealTimeWaveform();
+            });
+
+            startButton.disabled = true;
+            stopButton.disabled = false;
+        }
+
+        function stopRecording() {
+            mediaRecorder.stop();
+            audioContext.close();
+            isRecording = false;
+
+            startButton.disabled = false;
+            stopButton.disabled = true;
+            document.getElementById("process-button").disabled = false;
+            
+        }
+
+        function drawRealTimeWaveform() {
+            if (!isRecording) return;
+
+            analyser.getByteTimeDomainData(dataArray);
+            recordingWaveformCtx.clearRect(0, 0, recordingWaveformCanvas.width, recordingWaveformCanvas.height);
+
+            recordingWaveformCtx.lineWidth = 2;
+            recordingWaveformCtx.strokeStyle = "#ff6f00";
+            recordingWaveformCtx.beginPath();
+
+            const sliceWidth = recordingWaveformCanvas.width / dataArray.length;
+            let x = 0;
+
+            for (let i = 0; i < dataArray.length; i++) {
+                const v = dataArray[i] / 128.0;
+                const y = v * recordingWaveformCanvas.height / 2;
+
+                if (i === 0) {
+                    recordingWaveformCtx.moveTo(x, y);
+                } else {
+                    recordingWaveformCtx.lineTo(x, y);
+                }
+
+                x += sliceWidth;
+            }
+            recordingWaveformCtx.lineTo(recordingWaveformCanvas.width, recordingWaveformCanvas.height / 2);
+            recordingWaveformCtx.stroke();
+
+            requestAnimationFrame(drawRealTimeWaveform);
+        }
+
+        function convertToWav(audioBuffer) {
+            const sampleRate = 44100; // Standard sample rate for WAV
+            const numChannels = 1; // Mono audio
+
+            // Calculate the length of the PCM data
+            const bufferLength = audioBuffer.length;
+            const wavSize = 44 + bufferLength * 2; // 44 bytes for the header + 2 bytes per sample
+
+            // Create WAV file header
+            const buffer = new ArrayBuffer(wavSize);
+            const view = new DataView(buffer);
+
+            // Write WAV header
+            writeString(view, 0, 'RIFF'); // RIFF identifier
+            view.setUint32(4, wavSize - 8, true); // file length
+            writeString(view, 8, 'WAVE'); // RIFF type
+            writeString(view, 12, 'fmt '); // format chunk identifier
+            view.setUint32(16, 16, true); // format chunk length
+            view.setUint16(20, 1, true); // sample format (PCM)
+            view.setUint16(22, numChannels, true); // channel count
+            view.setUint32(24, sampleRate, true); // sample rate
+            view.setUint32(28, sampleRate * numChannels * 2, true); // byte rate
+            view.setUint16(32, numChannels * 2, true); // block align
+            view.setUint16(34, 16, true); // bits per sample
+            writeString(view, 36, 'data'); // data chunk identifier
+            view.setUint32(40, bufferLength * 2, true); // data chunk length
+
+            // Write the PCM samples
+            const pcmData = new Int16Array(bufferLength);
+            for (let i = 0; i < bufferLength; i++) {
+                // Convert Float32 values to Int16 PCM format
+                pcmData[i] = Math.max(-1, Math.min(1, audioBuffer[i])) < 0 ? audioBuffer[i] * 32768 : audioBuffer[i] * 32767; 
+            }
+
+            // Ensure writing of PCM data starts after the header
+            const dataStartIndex = 44; // The header size is 44 bytes
+            for (let i = 0; i < pcmData.length; i++) {
+                view.setInt16(dataStartIndex + i * 2, pcmData[i], true); // Write samples starting after the header
+            }
+
+            // Create a Blob from the buffer
+            return new Blob([buffer], { type: 'audio/wav' });
+        }
+
+        // Utility function to write a string to the DataView
+        function writeString(view, offset, string) {
+            for (let i = 0; i < string.length; i++) {
+                view.setUint8(offset + i, string.charCodeAt(i));
+            }
+        }
+
+        // Modify the form submission to include the recorded audio
+        document.getElementById("process-button").addEventListener("click", function(event) {
+            const formData = new FormData(document.getElementById("equalizer-form"));
+            // Convert ArrayBuffer to WAV format if necessary
+            
+            if (wavRecored) {
+                formData.append('recorded_audio', wavRecored, 'recorded.wav'); // Append recorded audio
+            }
+
+            // Send the form data to the server
+            fetch('/upload', { method: 'POST', body: formData })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Success:', data);
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
+        });
+        // Set initial canvas size
+        canvas.width = window.innerWidth * 0.95; // Adjust width based on your layout
+        canvas.height = 200; // Set a fixed height
+
+        function mode(mood) {
+        // Định nghĩa giá trị thanh trượt cho từng chế độ
+            const modes = {
+                fun: {
+                    "sub_bass_gain": 3,
+                    "bass_gain": 2,
+                    "low_mid_gain": 0,
+                    "mid_gain": 4,
+                    "upper_mid_gain": 5,
+                    "presence_gain": 6,
+                    "brilliance_gain": 5
+                },
+                sad: {
+                    "sub_bass_gain": 5,
+                    "bass_gain": 4,
+                    "low_mid_gain": 0,
+                    "mid_gain": -2,
+                    "upper_mid_gain": -3,
+                    "presence_gain": -2,
+                    "brilliance_gain": -3
+                },
+                // horror: {
+                //     "sub_bass_gain": 6,
+                //     "bass_gain": 3,
+                //     "low_mid_gain": 0,
+                //     "mid_gain": -4,
+                //     "upper_mid_gain": 0,
+                //     "presence_gain": 4,
+                //     "brilliance_gain": 6
+                // },
+                horror: {
+                    "sub_bass_gain": -5,
+                    "bass_gain": -6,
+                    "low_mid_gain": -3,
+                    "mid_gain": -4,
+                    "upper_mid_gain": -5,
+                    "presence_gain": -6,
+                    "brilliance_gain": -7
+                },
+                bass_boost: {  // Hiệu ứng "Rung tim"
+                    "sub_bass_gain": 8,
+                    "bass_gain": 7,
+                    "low_mid_gain": 2,
+                    "mid_gain": 0,
+                    "upper_mid_gain": -2,
+                    "presence_gain": -3,
+                    "brilliance_gain": -5
+                }
+            };
+
+        // Lấy giá trị tương ứng với chế độ được truyền vào
+            const sliderValues = modes[mood];
+
+        // Cập nhật giá trị các thanh trượt
+            for (const [id, value] of Object.entries(sliderValues)) {
+                const slider = document.getElementById(id);
+                if (slider) {
+                    slider.value = value;
+                    document.getElementById(`${id}_value`).innerText = value;
+                    }
+                }
+        }
+    </script>
 </body>
 </html>

@@ -1,89 +1,173 @@
-        /* Custom styling for form and headings */
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f9f9f9;
-            padding: 20px;
-        }
+/* Adjust the width of jPlayer container*/
+#jp_container_1 {
+    width: 600px;
+    margin: 0 auto;
+}
 
-        /* Adjust the width of jPlayer container*/
-        #jp_container_1 {
-            width: 600px;
-            margin: 0 auto;
-        }
-
-        .jp-controls,
-        .jp-time-holder {
-            margin: 0 100px;
-        }
+.jp-controls,
+.jp-time-holder {
+    margin: 0 100px;
+}
 
 
-        .jp-progress {
-            margin: 0 100px;
-            border-radius: 5px;
-        }
+.jp-progress {
+    margin: 0 100px;
+    border-radius: 5px;
+}
 
-        .jp-seek-bar, .jp-play-bar {
-            border-radius: 5px;
-        }
+.jp-seek-bar, .jp-play-bar {
+    border-radius: 5px;
+}
 
-        .jp-time-holder {
-            font-size: 14px;
-        }
+.jp-time-holder {
+    font-size: 14px;
+}
 
-        .jp-volume-controls {
-            margin-left: 180px;
-        }
+.jp-volume-controls {
+    margin-left: 180px;
+}
 
-        .jp-volume-bar, .jp-volume-bar-value {
-            border-radius: 5px;
-        }
+.jp-volume-bar, .jp-volume-bar-value {
+    border-radius: 5px;
+}
 
-   /* .plyr__controls {
-        background-color: #090404;
-        border-radius: 5px;
+/* .plyr__controls {
+background-color: #090404;
+border-radius: 5px;
+padding: 10px;
+padding: var(--plyr-control-spacing, 10px);
+}*/
+        
+body {
+    background-color: #3C3D37;
+    color: #e0e0e0;
+    font-family: Arial, sans-serif;
+    height: 100vh;
+    overflow-y: auto;
+}
+
+#equalizer-form {
+    background-color: #697565;
+    max-width: 1500px;
+}
+
+#process-button {
+    background-color: #ECDFCC;
+}
+
+#loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+    display: flex;
+}
+
+/* Center the form in the viewport */
+.d-flex {
+    /* height: 100vh; */
+    overflow-y: auto;
+}
+
+form {
+    /* max-width: 700px; */
+}
+
+.slider-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+    width: 250px !important;
+}
+
+.vertical-range {
+    width: 180px;
+    height: 8px;
+    transform: rotate(-90deg);
+    appearance: none;
+    margin: 20px 0;
+    margin-top: 85px !important;
+}
+
+.vertical-range::-webkit-slider-thumb,
+.vertical-range::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    background-color: #ff6f00;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.vertical-range::-webkit-slider-runnable-track,
+.vertical-range::-moz-range-track {
+    background-color: #e0e0e0;
+    height: 6px;
+    border-radius: 5px;
+}
+
+/* Style for file input */
+.form-control-file {
+    border: 2px dashed #ff6f00; /* Dashed border */
+    background-color: #1e1e1e; /* Dark background */
+    color: #e0e0e0; /* Light text color */
+    padding: 10px; /* Padding for the input */
+    border-radius: 5px; /* Rounded corners */
+    transition: border-color 0.3s; /* Smooth transition for border color */
+}
+
+.form-control-file:hover {
+    border-color: #ff9800; /* Change border color on hover */
+}
+/* Style for range input (sliders) */
+.custom-range {
+    appearance: none; /* Remove default styling */
+    width: 180px; /* Width of the slider */
+    height: 6px; /* Height of the track */
+    background: #555; /* Track color */
+    border-radius: 5px; /* Rounded corners */
+    outline: none; /* Remove outline */
+    transition: background 0.3s; /* Smooth transition */
+}
+
+.custom-range:hover {
+    background: #777; /* Change track color on hover */
+}
+
+/* Style for the slider thumb */
+.custom-range::-webkit-slider-thumb {
+    appearance: none; /* Remove default styling */
+    width: 14px; /* Width of the thumb */
+    height: 14px; /* Height of the thumb */
+    background: #ff6f00; /* Thumb color */
+    border-radius: 50%; /* Rounded thumb */
+    cursor: pointer; /* Pointer cursor on hover */
+}
+
+.custom-range::-moz-range-thumb {
+    width: 14px; /* Width of the thumb */
+    height: 14px; /* Height of the thumb */
+    background: #ff6f00; /* Thumb color */
+    border-radius: 50%; /* Rounded thumb */
+    cursor: pointer; /* Pointer cursor on hover */
+}
+
+/* Style for the thumb when focused */
+.custom-range:focus::-webkit-slider-thumb {
+    background: #ff9800; /* Change thumb color when focused */
+}
+
+.custom-range:focus::-moz-range-thumb {
+    background: #ff9800; /* Change thumb color when focused */
+}
+
+@media (max-width: 768px) {
+    /* Định dạng cho các thiết bị di động */
+    .your-class {
+        font-size: 14px;
         padding: 10px;
-        padding: var(--plyr-control-spacing, 10px);
-    }*/
-        form {
-            max-width: 400px;
-            margin: 20px auto;
-            padding: 20px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        h2 {
-            color: #333;
-            text-align: center;
-            margin-bottom: 20px;
-            font-size: 18px;
-        }
-
-        label {
-            font-size: 14px;
-            color: #555;
-            margin-top: 10px;
-            display: block;
-        }
-
-        input[type="file"],
-        input[type="range"] {
-            width: 100%;
-            margin: 8px 0;
-        }
-
-        button[type="submit"] {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px;
-            width: 100%;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        button[type="submit"]:hover {
-            background-color: #45a049;
-        }
+    }
+}
