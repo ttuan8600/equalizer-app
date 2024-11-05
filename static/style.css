@@ -39,7 +39,7 @@ padding: var(--plyr-control-spacing, 10px);
 }*/
         
 body {
-    background-color: #3C3D37;
+    background-color: #dd7d81d4;
     color: #e0e0e0;
     font-family: Arial, sans-serif;
     height: 100vh;
@@ -47,7 +47,7 @@ body {
 }
 
 #equalizer-form {
-    background-color: #697565;
+    background-color: #d35757bf;
     max-width: 1500px;
 }
 

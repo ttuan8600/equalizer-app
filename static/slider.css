@@ -176,7 +176,7 @@ label[type='range'] {
     background-position: bottom center;
     background-repeat: no-repeat;
     background-size: 0.2em 0.2em;
-    color: #999;
+    color: #ffdede;
 }
 label[type='range']:first-letter {
     font-size: 0.6em;

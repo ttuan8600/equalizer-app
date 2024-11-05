@@ -174,7 +174,7 @@ def plot_filter_response():
         'brilliance': [6000, 11024],
     }
 
-    plt.figure(figsize=(12, 8))
+    plt.figure(figsize=(10, 4))
 
     # Vẽ đáp ứng tần số cho từng bộ lọc
     for band, (low, high) in bands.items():
@@ -194,7 +194,7 @@ def plot_filter_response():
 
 
 def plot_frequency_domain_comparison(original_data, filtered_data, rate):
-    plt.figure(figsize=(12, 6))
+    plt.figure(figsize=(10, 4))
 
     # Biến đổi Fourier cho tín hiệu đầu vào
     original_freq_data = np.fft.fft(original_data)
