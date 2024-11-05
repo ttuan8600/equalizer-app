@@ -95,14 +95,11 @@
     </div>
     
     <script src="/static/js/recorder.js"></script>
-    <script type="module">
+    <script>
         const audioWaveformCanvas = document.getElementById("audio-waveform");
         const audioWaveformCtx = audioWaveformCanvas.getContext("2d");
         const recordingWaveformCanvas = document.getElementById("waveform");
         const recordingWaveformCtx = recordingWaveformCanvas.getContext("2d");
-        
-        let mediaRecorder;
-        let audioChunks = [];
 
         function updateValue(id) {
             document.getElementById(id + '_value').textContent = document.getElementById(id).value;
@@ -127,8 +124,14 @@
                 const offlineAudioContext = new (window.OfflineAudioContext || window.webkitOfflineAudioContext)(1, 44100 * 40, 44100);
                 
                 offlineAudioContext.decodeAudioData(arrayBuffer, function(buffer) {
-                    const data = buffer.getChannelData(0);
-                    drawWaveform(data, audioWaveformCanvas.id);
+                    const rawData = buffer.getChannelData(0); // Get the first channel
+                    const samples = 500; // Number of samples to plot
+                    const blockSize = Math.floor(rawData.length / samples); // Number of samples in each subdivision
+                    const filteredData = [];
+                    for (let i = 0; i < samples; i++) {
+                        filteredData.push(rawData[i * blockSize]);
+                    }
+                    drawWaveform(filteredData, audioWaveformCanvas.id);
                 });
             };
             reader.readAsArrayBuffer(file);
@@ -139,41 +142,35 @@
             const ctx = canvas.getContext("2d");
             const width = canvas.width;
             const height = canvas.height;
+
             ctx.clearRect(0, 0, width, height);
-
-            const step = Math.ceil(data.length / width);
-            const amp = height / 2;
-
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = 'rgb(0, 0, 0)';
             ctx.beginPath();
-            ctx.moveTo(0, amp);
 
-            for (let i = 0; i < width; i++) {
-                let min = 1.0;
-                let max = -1.0;
+            const sliceWidth = width * 1.0 / data.length;
+            let x = 0;
 
-                for (let j = 0; j < step; j++) {
-                    const datum = data[i * step + j];
-                    if (datum < min) min = datum;
-                    if (datum > max) max = datum;
+            for (let i = 0; i < data.length; i++) {
+                const v = data[i] * 0.5 + 0.5;
+                const y = v * height;
+
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
                 }
 
-                ctx.lineTo(i, (1 + min) * amp);
-                ctx.lineTo(i, (1 + max) * amp);
+                x += sliceWidth;
             }
-            ctx.lineTo(width, height);
-            ctx.lineTo(0, height);
-            ctx.fillStyle = "#ff6f00";
-            ctx.fill();
+
+            ctx.lineTo(width, height / 2);
+            ctx.stroke();
         }
-        
+
         // Modify the form submission to include the recorded audio
         document.getElementById("process-button").addEventListener("click", function(event) {
             const formData = new FormData(document.getElementById("equalizer-form"));
-            // Convert ArrayBuffer to WAV format if necessary
-            
-            if (wavRecored) {
-                formData.append('recorded_audio', wavRecored, 'recorded.wav'); // Append recorded audio
-            }
 
             // Send the form data to the server
             fetch('/upload', { method: 'POST', body: formData })
