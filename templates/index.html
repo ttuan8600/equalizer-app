@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="/static/style.css">
     <link rel="stylesheet" href="/static/slider.css">
     <link rel="stylesheet" href="/static/input_file.css">
-
 </head>
 <body>
     <!-- Loading overlay -->
@@ -26,7 +25,7 @@
 
             <div class="d-flex align-items-center justify-content-center">
                 <div class="form-input-file">    
-                    <input type="file" name="file" accept=".wav, .mp3" required id="file-input" onchange="checkFileUploaded()">
+                    <input type="file" name="file" accept=".wav" required id="file-input" onchange="checkFileUploaded()">
                 </div>
             </div>
 
@@ -94,8 +93,9 @@
         </form>
         
     </div>
-
-    <script>
+    
+    <script src="/static/js/recorder.js"></script>
+    <script type="module">
         const audioWaveformCanvas = document.getElementById("audio-waveform");
         const audioWaveformCtx = audioWaveformCanvas.getContext("2d");
         const recordingWaveformCanvas = document.getElementById("waveform");
@@ -103,13 +103,6 @@
         
         let mediaRecorder;
         let audioChunks = [];
-        let audioContext;
-        let analyser;
-        let dataArray;
-        let isRecording = false;
-
-        const startButton = document.getElementById('start-recording');
-        const stopButton = document.getElementById('stop-recording');
 
         function updateValue(id) {
             document.getElementById(id + '_value').textContent = document.getElementById(id).value;
@@ -172,146 +165,7 @@
             ctx.fillStyle = "#ff6f00";
             ctx.fill();
         }
-
-        startButton.addEventListener("click", startRecording);
-        stopButton.addEventListener("click", stopRecording);
-        let recordedAudioBlob = null; 
-        let wavRecored = null;
-        function startRecording() {
-            audioChunks = [];
-            audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            analyser = audioContext.createAnalyser();
-            analyser.fftSize = 2048;
-            
-            dataArray = new Uint8Array(analyser.frequencyBinCount);
-            navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-                const source = audioContext.createMediaStreamSource(stream);
-                source.connect(analyser);
-                
-                mediaRecorder = new MediaRecorder(stream);
-                mediaRecorder.ondataavailable = event => {
-                    audioChunks.push(event.data);
-                };
-                mediaRecorder.onstop = async () => {
-                    // Create a new Blob with the audio chunks
-                    recordedAudioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
-                    
-                    // Get the audio data as an array buffer
-                    const arrayBuffer = await recordedAudioBlob.arrayBuffer();
-                    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-
-                    // Convert to WAV format
-                    wavRecored = convertToWav(audioBuffer); // Use your WAV conversion function here
-                    const formData = new FormData();
-                    formData.append('audio_data', wavRecored);
-
-                    const response = await fetch('/rec_audio', { method: 'POST', body: formData });
-                    const waveformData = await response.json();
-
-                    drawWaveform(waveformData.data, "waveform"); // Vẽ vào canvas "waveform"
-                };
-                mediaRecorder.start();
-                isRecording = true;
-                drawRealTimeWaveform();
-            });
-
-            startButton.disabled = true;
-            stopButton.disabled = false;
-        }
-
-        function stopRecording() {
-            mediaRecorder.stop();
-            audioContext.close();
-            isRecording = false;
-
-            startButton.disabled = false;
-            stopButton.disabled = true;
-            document.getElementById("process-button").disabled = false;
-            
-        }
-
-        function drawRealTimeWaveform() {
-            if (!isRecording) return;
-
-            analyser.getByteTimeDomainData(dataArray);
-            recordingWaveformCtx.clearRect(0, 0, recordingWaveformCanvas.width, recordingWaveformCanvas.height);
-
-            recordingWaveformCtx.lineWidth = 2;
-            recordingWaveformCtx.strokeStyle = "#ff6f00";
-            recordingWaveformCtx.beginPath();
-
-            const sliceWidth = recordingWaveformCanvas.width / dataArray.length;
-            let x = 0;
-
-            for (let i = 0; i < dataArray.length; i++) {
-                const v = dataArray[i] / 128.0;
-                const y = v * recordingWaveformCanvas.height / 2;
-
-                if (i === 0) {
-                    recordingWaveformCtx.moveTo(x, y);
-                } else {
-                    recordingWaveformCtx.lineTo(x, y);
-                }
-
-                x += sliceWidth;
-            }
-            recordingWaveformCtx.lineTo(recordingWaveformCanvas.width, recordingWaveformCanvas.height / 2);
-            recordingWaveformCtx.stroke();
-
-            requestAnimationFrame(drawRealTimeWaveform);
-        }
-
-        function convertToWav(audioBuffer) {
-            const sampleRate = 44100; // Standard sample rate for WAV
-            const numChannels = 1; // Mono audio
-
-            // Calculate the length of the PCM data
-            const bufferLength = audioBuffer.length;
-            const wavSize = 44 + bufferLength * 2; // 44 bytes for the header + 2 bytes per sample
-
-            // Create WAV file header
-            const buffer = new ArrayBuffer(wavSize);
-            const view = new DataView(buffer);
-
-            // Write WAV header
-            writeString(view, 0, 'RIFF'); // RIFF identifier
-            view.setUint32(4, wavSize - 8, true); // file length
-            writeString(view, 8, 'WAVE'); // RIFF type
-            writeString(view, 12, 'fmt '); // format chunk identifier
-            view.setUint32(16, 16, true); // format chunk length
-            view.setUint16(20, 1, true); // sample format (PCM)
-            view.setUint16(22, numChannels, true); // channel count
-            view.setUint32(24, sampleRate, true); // sample rate
-            view.setUint32(28, sampleRate * numChannels * 2, true); // byte rate
-            view.setUint16(32, numChannels * 2, true); // block align
-            view.setUint16(34, 16, true); // bits per sample
-            writeString(view, 36, 'data'); // data chunk identifier
-            view.setUint32(40, bufferLength * 2, true); // data chunk length
-
-            // Write the PCM samples
-            const pcmData = new Int16Array(bufferLength);
-            for (let i = 0; i < bufferLength; i++) {
-                // Convert Float32 values to Int16 PCM format
-                pcmData[i] = Math.max(-1, Math.min(1, audioBuffer[i])) < 0 ? audioBuffer[i] * 32768 : audioBuffer[i] * 32767; 
-            }
-
-            // Ensure writing of PCM data starts after the header
-            const dataStartIndex = 44; // The header size is 44 bytes
-            for (let i = 0; i < pcmData.length; i++) {
-                view.setInt16(dataStartIndex + i * 2, pcmData[i], true); // Write samples starting after the header
-            }
-
-            // Create a Blob from the buffer
-            return new Blob([buffer], { type: 'audio/wav' });
-        }
-
-        // Utility function to write a string to the DataView
-        function writeString(view, offset, string) {
-            for (let i = 0; i < string.length; i++) {
-                view.setUint8(offset + i, string.charCodeAt(i));
-            }
-        }
-
+        
         // Modify the form submission to include the recorded audio
         document.getElementById("process-button").addEventListener("click", function(event) {
             const formData = new FormData(document.getElementById("equalizer-form"));

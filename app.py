@@ -254,5 +254,32 @@ def extract_waveform_data(file_path):
         }
 
 
+@app.route('/upload_rec', methods=['POST'])
+def upload_rec():
+    if 'audio' not in request.files:
+        return jsonify({'error': 'No audio file in request'}), 400
+    
+    audio_file = request.files['audio']
+    if audio_file.filename == '':
+        return jsonify({'error': 'No file selected'}), 400
+
+    # Save the uploaded webm file temporarily
+    webm_file_path = os.path.join(app.config['UPLOAD_FOLDER'], audio_file.filename)
+    audio_file.save(webm_file_path)
+
+    # Convert webm to wav
+    wav_file_path = os.path.splitext(webm_file_path)[0] + '.wav'
+    try:
+        # Load the webm file and convert it to wav
+        audio = AudioSegment.from_file(webm_file_path, format='webm')
+        audio.export(wav_file_path, format='wav')
+    except Exception as e:
+        return jsonify({'error': 'Failed to convert audio file: ' + str(e)}), 500
+
+    # Optional: Clean up the temporary webm file
+    os.remove(webm_file_path)
+
+    return jsonify({'message': 'Audio file converted and saved successfully', 'wav_file': wav_file_path}), 200
+
 if __name__ == "__main__":
     app.run(debug=True)
