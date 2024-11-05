@@ -1,6 +1,6 @@
 /* Adjust the width of jPlayer container*/
 #jp_container_1 {
-    width: 600px;
+    width: 620px;
     margin: 0 auto;
 }
 
@@ -53,7 +53,7 @@ body {
 
 #process-button {
     background-color: #ECDFCC;
-    width: 50%;
+    width: 30%;
 }
 
 #loading-overlay {

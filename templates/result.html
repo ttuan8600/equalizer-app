@@ -8,23 +8,84 @@
     <link rel="stylesheet" href="/static/style.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jplayer/2.9.2/skin/blue.monday/css/jplayer.blue.monday.css" integrity="sha512-hy+p5g5kWOE+l5AHCBmTo1gq1OetErrJK8u6TT2WQYUVmINNwzu9pu7oyG2f6S+qRJnbGcHu/QXpC2FV4sAvSg==" crossorigin="anonymous" referrerpolicy="no-referrer" /></head>
+    <style>
+        /* Tổng thể */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        
+        /* Tiêu đề */
+        h1, h2 {
+            text-align: center;
+            color: #4A90E2;
+        }
+    
+        /* Các ảnh */
+        img {
+            display: block;
+            max-width: 80%;
+            margin: 0 auto;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+    
+        /* ?Trình phát */
+        .jp-audio {
+            max-width: 700px;
+            margin: 20px auto;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+    
+        .jp-controls button {
+            color: #4A90E2;
+        }
+    
+        /* Nút Process Another File */
+        #process-button {
+            display: inline-block;
+            background-color: #4A90E2;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+    
+        #process-button:hover {
+            background-color: #357ABD;
+        }
+    </style>
 <body>
-    <h1>Audio Processing Result</h1>
+    <div style="display: flex; justify-content: center;">
+        <h1>Audio Processing Result</h1>
+    </div>
+    
     <h2>Waveform</h2>
     <img src="{{ url_for('static', filename=filename) }}" alt="Processed Audio">
-
+    
     <h2>Spectrogram</h2>
     <img src="{{ url_for('static', filename=spectrogram) }}" alt="Spectrogram">
     
     <h2>Filter Frequency Response</h2>
     <img src="{{ url_for('static', filename=filter_response) }}" alt="Filter Frequency Response">
-
+    
     <h2>Frequency Domain Comparison</h2>
     <img src="{{ url_for('static', filename=frequency_comparison) }}" alt="Frequency Domain Comparison">
-
-    <!-- <a href="/">Process Another File</a> -->
+    
+    <!-- <div id="jquery_jplayer_1" class="jp-jplayer"></div>
+    <div id="jp_container_1" class="jp-audio" role="application" aria-label="media player"> -->
+        <!-- <a href="/">Process Another File</a> -->
     <div id="jquery_jplayer_1" class="jp-jplayer"></div>
     <div id="jp_container_1" class="jp-audio" role="application" aria-label="media player">
+        <!-- jPlayer Code -->
         <div class="jp-type-single">
             <div class="jp-gui jp-interface">
                 <div class="jp-controls">
@@ -60,6 +121,10 @@
             </div>
         </div>
     </div>
+    
+    <div style="display: flex; justify-content: center;">
+        <button id="process-button" class="btn btn-block mt-4" onclick="location.href='/'">Process Another File</button>
+    </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jplayer/2.9.1/jplayer/jquery.jplayer.min.js" integrity="sha512-aZHE5UJPFxgk9Vq9dGfFp+Lu3lamANJ+Ta+XQD+b+SMaeIkG508+PlT4KXb71bT/STAQv5Ul7g+lzvFJgz+Abw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -86,6 +151,6 @@
             });
     });
     </script>
-    <button id="process-button" class="btn btn-block mt-4" onclick="location.href='/'">Process Another File</button>
+    
 </body>
 </html>
