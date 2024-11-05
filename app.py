@@ -101,11 +101,12 @@ def process_audio(filename):
     plot_filter_response()
 
     return render_template("result.html",
-                           filename=fn,
-                           outputFile="output.png",
+                           audio=fn,
+                           filename="output.png",
                            spectrogram="spectrogram.png",
                            filter_response="filter_response.png",
                            frequency_comparison="frequency_comparison.png")
+
 
 @app.route("/uploads/<filename>")
 def uploaded_file(filename):
