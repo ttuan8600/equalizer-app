@@ -39,20 +39,25 @@ padding: var(--plyr-control-spacing, 10px);
 }*/
         
 body {
-    background-color: #dd7d81d4;
-    color: #e0e0e0;
+    background-color: #fff;
+    color: #333;
     font-family: Arial, sans-serif;
     height: 100vh;
     overflow-y: auto;
 }
 
+button {
+}
+
 #equalizer-form {
-    background-color: #d35757bf;
+    background-color: #fff;
     max-width: 1500px;
+    color: #333;
 }
 
 #process-button {
-    background-color: #ECDFCC;
+    background-color: #FD5B65;
+    color: #fff;
     width: 30%;
 }
 
@@ -105,8 +110,8 @@ form {
 /* Style for file input */
 .form-control-file {
     border: 2px dashed #ff6f00; /* Dashed border */
-    background-color: #1e1e1e; /* Dark background */
-    color: #e0e0e0; /* Light text color */
+    background-color: #F4F4FA; /* Dark background */
+    color: #333; /* Light text color */
     padding: 10px; /* Padding for the input */
     border-radius: 5px; /* Rounded corners */
     transition: border-color 0.3s; /* Smooth transition for border color */

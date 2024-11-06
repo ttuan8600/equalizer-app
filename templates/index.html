@@ -21,7 +21,7 @@
 
     <div class="d-flex justify-content-center align-items-center">
         <form id="equalizer-form" method="post" action="{{ url_for('upload') }}" enctype="multipart/form-data" class="p-4 rounded shadow w-100">
-            <h2 class="text-center text-light mb-4">Upload Audio File</h2>
+            <h2 class="text-center mb-4">Upload Audio File</h2>
 
             <div class="d-flex align-items-center justify-content-center">
                 <div class="form-input-file">    
@@ -31,7 +31,7 @@
 
             <!-- Container for audio waveform display -->
             <div class="container mt-4">
-                <h3 class="text-center text-light">Uploaded Audio Waveform</h3>
+                <h3 class="text-center">Uploaded Audio Waveform</h3>
                 <div class="border border-warning rounded p-3" style="height: 200px;">
                     <canvas id="audio-waveform" class="w-100 h-100"></canvas>
                 </div>
@@ -40,10 +40,10 @@
             <div class="container mt-4">
                 <h2 class="text-center">Record Audio and Display Waveform</h2>
                 <div class="text-center">
-                    <button id="start-recording" class="btn btn-success">
+                    <button id="start-recording" class="btn btn-success" type="button">
                         <i class="fas fa-microphone"></i> Start Recording
                     </button>
-                    <button id="stop-recording" class="btn btn-danger" disabled>
+                    <button id="stop-recording" class="btn btn-danger" type="button" disabled>
                         <i class="fas fa-stop"></i> Stop Recording
                     </button>                    
                 </div>
@@ -52,9 +52,9 @@
                 </div>
             </div>
 
-            <h2 class="text-center text-light mt-4 mb-3">Settings</h2>
+            <h2 class="text-center mt-4 mb-3">Settings</h2>
             
-            <div class="d-flex justify-content-around">
+            <div class="d-flex justify-content-around" style="padding-bottom: 25px;">
                 <fieldset>
                     <legend>Equalizer</legend>
                     <div class="equalizer-container">
@@ -83,10 +83,12 @@
                 <button id="bass-boost-button" type="button" style="width: 140px; font-size: 15px; padding: 10px 20px; border-radius: 8px; background-color: #e55fc8; color: white; border: none;" onclick="mode('bass_boost')">
                     <i class="fa-solid fa-music"></i> Fever
                 </button>
-                
+                <button id="reset-button" type="button" style="width: 140px; font-size: 15px; padding: 10px 20px; border-radius: 8px; background-color: #FF6347; color: white; border: none;" onclick="resetSliders()">
+                    <i class="fa-solid fa-rotate-left"></i> Reset
+                </button>
             </div>
             <div class="d-flex justify-content-center">
-                <button type="submit" id="process-button" class="btn mt-4" onclick="showLoading()" >
+                <button type="submit" id="process-button" class="btn mt-4" onclick="showLoading()" disabled >
                     <i class="fa-solid fa-sliders"></i> Process
                 </button>
             </div>
@@ -96,7 +98,14 @@
     
     <script src="/static/js/recorder.js"></script>
     <script>
+        function setCanvasResolution(canvas) {
+            const ratio = window.devicePixelRatio || 1;
+            canvas.width = canvas.offsetWidth * ratio;
+            canvas.height = canvas.offsetHeight * ratio;
+            canvas.getContext('2d').scale(ratio, ratio);
+        }
         const audioWaveformCanvas = document.getElementById("audio-waveform");
+        setCanvasResolution(audioWaveformCanvas);
         const audioWaveformCtx = audioWaveformCanvas.getContext("2d");
         const recordingWaveformCanvas = document.getElementById("waveform");
         const recordingWaveformCtx = recordingWaveformCanvas.getContext("2d");
@@ -145,7 +154,7 @@
 
             ctx.clearRect(0, 0, width, height);
             ctx.lineWidth = 2;
-            ctx.strokeStyle = 'rgb(0, 0, 0)';
+            ctx.strokeStyle = '#FF5F40';
             ctx.beginPath();
 
             const sliceWidth = width * 1.0 / data.length;
@@ -252,6 +261,17 @@
                     document.getElementById(`${id}_value`).innerText = value;
                     }
                 }
+        }
+        function resetSliders() {
+            const sliderIds = ["sub_bass_gain", "bass_gain", "low_mid_gain", "mid_gain", "upper_mid_gain", "presence_gain", "brilliance_gain"];
+            
+            sliderIds.forEach(id => {
+                const slider = document.getElementById(id);
+                if (slider) {
+                    slider.value = 0;
+                    document.getElementById(`${id}_value`).innerText = 0;
+                }
+            });
         }
     </script>
 </body>

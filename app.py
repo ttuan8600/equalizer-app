@@ -280,5 +280,8 @@ def upload_rec():
 
     return jsonify({'message': 'Audio file converted and saved successfully', 'wav_file': wav_file_path}), 200
 
+@app.route('/test')
+def test():
+    return render_template('result.html')
 if __name__ == "__main__":
     app.run(debug=True)
