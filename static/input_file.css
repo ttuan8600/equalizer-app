@@ -2,8 +2,8 @@
     --primary-color: #0964b0;
 }
 .form-input-file {
-
-    background-color: #3C3D37;
+    background-color: #F4F4FA;
+    border: 1px solid #c9c9c9;
     padding: 32px;
     border-radius: 20px;
 }

@@ -7,7 +7,15 @@ let canvas;
 let canvasCtx;
 let animationId;
 
-document.getElementById('start-recording').addEventListener('click', async () => {
+function setCanvasResolution(canvas) {
+    const ratio = window.devicePixelRatio || 1;
+    canvas.width = canvas.offsetWidth * ratio;
+    canvas.height = canvas.offsetHeight * ratio;
+    canvas.getContext('2d').scale(ratio, ratio);
+}
+
+document.getElementById('start-recording').addEventListener('click', async (event) => {
+    event.preventDefault();
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -19,6 +27,7 @@ document.getElementById('start-recording').addEventListener('click', async () =>
     dataArray = new Uint8Array(bufferLength);
 
     canvas = document.getElementById('waveform');
+    setCanvasResolution(canvas);
     canvasCtx = canvas.getContext('2d');
 
     drawRealTimeWaveform();
@@ -30,13 +39,13 @@ document.getElementById('start-recording').addEventListener('click', async () =>
     mediaRecorder.onstop = async () => {
         const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
         const audioUrl = URL.createObjectURL(audioBlob);
-        console.log(audioUrl)
-        const a = document.createElement('a');
-        a.href = audioUrl;
-        a.download = 'recording.webm';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+        // console.log(audioUrl)
+        // const a = document.createElement('a');
+        // a.href = audioUrl;
+        // a.download = 'recording.webm';
+        // document.body.appendChild(a);
+        // a.click();
+        // document.body.removeChild(a);
         // const audio = document.getElementById('audioPlayback');
         // audio.src = audioUrl;
 
@@ -60,9 +69,10 @@ document.getElementById('start-recording').addEventListener('click', async () =>
     document.getElementById('stop-recording').disabled = false;
 });
 
-document.getElementById('stop-recording').addEventListener('click', () => {
+document.getElementById('stop-recording').addEventListener('click', (event) => {
+    event.preventDefault();
     mediaRecorder.stop();
-    document.getElementById("process-button").disabled = false;
+    // document.getElementById("process-button").disabled = false;
 });
 
 function drawRealTimeWaveform() {
@@ -70,11 +80,11 @@ function drawRealTimeWaveform() {
 
     analyser.getByteTimeDomainData(dataArray);
 
-    canvasCtx.fillStyle = '#ff6f00';
+    canvasCtx.fillStyle = '#fff';
     canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
 
     canvasCtx.lineWidth = 2;
-    canvasCtx.strokeStyle = 'rgb(0, 0, 0)';
+    canvasCtx.strokeStyle = '#3DD74A';
 
     canvasCtx.beginPath();
 
@@ -118,7 +128,7 @@ function drawRecordedWaveform(audioBlob) {
 function drawWaveForm(data) {
     canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
     canvasCtx.lineWidth = 2;
-    canvasCtx.strokeStyle = 'rgb(0, 0, 0)';
+    canvasCtx.strokeStyle = '#FF5F40';
     canvasCtx.beginPath();
 
     const sliceWidth = canvas.width * 1.0 / data.length;

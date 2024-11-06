@@ -5,6 +5,8 @@ fieldset {
     text-align: left;
     position: relative;
     transition: border-color .25s linear;
+    background-color: aliceblue;
+    box-shadow: 3px 9px 13px 0px #888888;
     &:hover {
       border: #BBB solid .2em;
     }
@@ -176,7 +178,7 @@ label[type='range'] {
     background-position: bottom center;
     background-repeat: no-repeat;
     background-size: 0.2em 0.2em;
-    color: #ffdede;
+    color: #333;
 }
 label[type='range']:first-letter {
     font-size: 0.6em;
