@@ -22,6 +22,15 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
+# Thiết lập các tần số cắt cho từng băng tần
+bands = {
+    'sub_bass': [20, 60],
+    'bass': [60, 250],
+    'low_mid': [250, 500],
+    'mid': [500, 2000],
+    'upper_mid': [2000, 4000],
+    'presence': [4000, 6000],
+}
 
 # Trang chủ để tải file và chọn bộ lọc
 @app.route("/", methods=["GET", "POST"])
@@ -71,6 +80,15 @@ def process_audio(filename):
 
     file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     rate, data = wavfile.read(file_path)
+    print (f"Rate: {rate}")
+
+    # Điều chỉnh dải tần brilliance tùy theo tần số mẫu (rate)
+    if rate <= 22500:
+        # Với tần số mẫu <= 22500 Hz, dải brilliance là 6000-11024 Hz
+        bands['brilliance'] = [6000, 11024]
+    else:
+        # Với tần số mẫu > 22500 Hz, dải brilliance có thể kéo dài lên đến tần số Nyquist
+        bands['brilliance'] = [6000, rate // 2 - 1]
 
     # Nếu có gain khác 0, tiến hành xử lý equalizer
     filtered_data = apply_equalizer(data, rate, gains)
@@ -109,11 +127,9 @@ def process_audio(filename):
                            filter_response="filter_response.png",
                            frequency_comparison="frequency_comparison.png")
 
-
 @app.route("/uploads/<filename>")
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
-
 
 def apply_equalizer(data, rate, gains):
     # Kiểm tra nếu dữ liệu đầu vào là rỗng
@@ -135,17 +151,6 @@ def apply_equalizer(data, rate, gains):
 
     print(gains_dict)
 
-    # Thiết lập các tần số cắt cho từng băng tần
-    bands = {
-        'sub_bass': [20, 60],
-        'bass': [60, 250],
-        'low_mid': [250, 500],
-        'mid': [500, 2000],
-        'upper_mid': [2000, 4000],
-        'presence': [4000, 6000],
-        'brilliance': [6000, 11024],
-    }
-
     # Tạo bản sao dữ liệu để áp dụng bộ lọc và điều chỉnh độ lợi
     filtered_data = np.zeros_like(data, dtype=np.float32)
 
@@ -163,18 +168,7 @@ def apply_equalizer(data, rate, gains):
     filtered_data = np.clip(filtered_data, -32767, 32767)
     return filtered_data.astype(np.int16)
 
-
 def plot_filter_response():
-    # Định nghĩa các tần số cắt cho từng băng tần
-    bands = {
-        'sub_bass': [20, 60],
-        'bass': [60, 250],
-        'low_mid': [250, 500],
-        'mid': [500, 2000],
-        'upper_mid': [2000, 4000],
-        'presence': [4000, 6000],
-        'brilliance': [6000, 11024],
-    }
 
     plt.figure(figsize=(10, 4))
 
