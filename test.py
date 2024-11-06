@@ -47,7 +47,7 @@ class TestEqualizer(unittest.TestCase):
         gains = [5, 5, 5, 5, 5, 5, 5]
         filtered_data = apply_equalizer(self.data, self.rate, gains)
         # Đảm bảo tín hiệu đầu ra nằm trong khoảng int16
-        self.assertTrue(np.all(filtered_data <= 32767) and np.all(filtered_data >= -32768))
+        self.assertTrue(np.all(filtered_data <= 32767) and np.all(filtered_data >= -32767))
 
     def test_equalizer_single_band_positive_gain(self):
         # Kiểm tra khi chỉ có một băng tần có gain dương
