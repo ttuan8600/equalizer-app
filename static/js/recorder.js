@@ -72,7 +72,7 @@ document.getElementById('start-recording').addEventListener('click', async (even
 document.getElementById('stop-recording').addEventListener('click', (event) => {
     event.preventDefault();
     mediaRecorder.stop();
-    // document.getElementById("process-button").disabled = false;
+    document.getElementById("process-recording").disabled = false;
 });
 
 function drawRealTimeWaveform() {
