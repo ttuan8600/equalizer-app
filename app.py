@@ -39,7 +39,7 @@ def index():
         "mid_gain": "500–2000 Hz",
         "upper_mid_gain": "2000–4000 Hz",
         "presence_gain": "4000–6000 Hz",
-        "brilliance_gain": "6000–11024 Hz"
+        "brilliance_gain": "6000–22000 Hz"
     }
     return render_template("index.html", ranges=ranges)
 
