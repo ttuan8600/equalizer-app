@@ -14,7 +14,7 @@ import wave
 from pydub import AudioSegment
 import io
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="static")
 UPLOAD_FOLDER = 'uploads/'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
@@ -46,13 +46,6 @@ def index():
 
 @app.route("/upload", methods=["POST"])
 def upload():
-    file = request.files["file"]
-    if not file:
-        file = request.files.get("recorded_audio")
-    filename = secure_filename(file.filename)
-    filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
-    file.save(filepath)
-
     gains = [
         int(request.form["sub_bass_gain"]),
         int(request.form["bass_gain"]),
@@ -64,6 +57,16 @@ def upload():
     ]
 
     gains_str = ",".join(map(str, gains))
+    
+    file = request.files["file"]
+    if not file:
+        file = request.files.get("audio_recorded")
+        return redirect(url_for("process_audio", filename=secure_filename(file.filename), gains=gains_str))
+        
+    filename = secure_filename(file.filename)
+    filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+    file.save(filepath)
+
     return redirect(url_for("process_audio", filename=filename, gains=gains_str))
 
 
@@ -243,6 +246,11 @@ def upload_rec():
     audio.export(wav_path, format='wav')
 
     return jsonify({'message': 'File uploaded successfully', 'wav_path': wav_path})
+
+@app.route("/get_recording", methods=["GET"])
+def get_recording():
+    filename = "recording.wav"
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 if __name__ == "__main__":
     app.run(debug=True)
